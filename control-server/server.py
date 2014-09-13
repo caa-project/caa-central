@@ -108,6 +108,7 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
         return True
 
     def open(self, index):
+        print "open"
         # 同じindexに対して１つしか繋がない
         if index in RobotHandler.ws_dict:
             print "Already exits"
@@ -126,7 +127,10 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
 
         UIから命令を含んだリクエストをもらったら呼ばれるよ．
         """
+        print index, "hoo"
+        print index in cls.ws_dict
         if index in cls.ws_dict:
+            print operation
             cls.ws_dict[index].write_message(operation)
 
 
