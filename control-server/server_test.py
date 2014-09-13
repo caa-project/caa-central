@@ -39,6 +39,8 @@ class CAAControlServerTest(AsyncHTTPTestCase):
     def testAuth(self):
         auth = Auth.instance()
 
+        self.assertEqual(3, auth.num_max())
+
         auth.register("1", "abc123")
         self.assertEqual("abc123", auth._pass_dict["1"])
 

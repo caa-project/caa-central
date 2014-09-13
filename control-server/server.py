@@ -47,6 +47,9 @@ class Auth():
         """登録できる最大数の設定"""
         self._num_max = num
 
+    def num_max(self):
+        return self._num_max
+
     def dump(self):
         response = ""
         for k, v in self._pass_dict.iteritems():
@@ -113,6 +116,9 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
         if index in RobotHandler.ws_dict:
             print "Already exits"
             self.close(403, "Already exits")
+        elif len(RobotHandler.ws_dict) >= Auth.instance().num_max():
+            print "Too many"
+            self.close(403, "Too many")
         else:
             print "Connected to %s" % index
             RobotHandler.ws_dict[index] = self
