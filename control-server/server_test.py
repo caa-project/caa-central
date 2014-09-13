@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from server import Auth
 from server import Constants
-from server import CreateHandler
+from server import RegisterHandler
 from server import DumpHandler
-from server import KillHandler
+from server import DeleteHandler
 from server import OperationHandler
 from server import RobotHandler
 from tornado.testing import AsyncHTTPTestCase
@@ -15,34 +16,63 @@ import unittest
 class CAAControlServerTest(AsyncHTTPTestCase):
 
     def get_app(self):
+        """@Override"""
         self.url_base = "http://hoge.com/"
         Constants.NUM_ROBOTS_MAX = 3
 
+        Auth.instance().set_num_max(3)
+
         return Application([
-            (r"/create/([0-9]+)/([0-9a-zA-Z]+)", CreateHandler),
+            (r"/register/([0-9]+)/([0-9a-zA-Z]+)", RegisterHandler),
             (r"/dump", DumpHandler),
-            (r"/kill/([0-9]+)", KillHandler),
+            (r"/delete/([0-9]+)", DeleteHandler),
             (r"/operation/([0-9]+)/([0-9a-zA-Z]+)", OperationHandler),
             (r"/robo/([0-9]+)", RobotHandler),
         ])
 
+    def tearDown(self):
+        """@Override"""
+        Auth.instance()._clear()
+        super(AsyncHTTPTestCase, self).tearDown()
+
+    def testAuth(self):
+        auth = Auth.instance()
+
+        auth.register("1", "abc123")
+        self.assertEqual("abc123", auth._pass_dict["1"])
+
+        auth.register("300", "aaa111")
+        self.assertRaises(Exception,
+                          auth.register, ("300", "aaa11"))
+        auth.register("2", "bbb222")
+        self.assertRaises(Exception,
+                          auth.register, ("111", "aaa"))
+        auth.delete("300")
+        self.assertRaises(Exception,
+                          auth.delete, ("300"))
+
+        self.assertTrue(auth.auth("1", "abc123"))
+        self.assertFalse(auth.auth("1", "abc"))
+
+        self.assertEqual("1: abc123\n2: bbb222\n", auth.dump())
+
     def testCreateAndKill(self):
         # Create
-        response = self.fetch(r"/create/1/abcd1234")
-        self.assertIn("Created index '1'", response.body)
+        response = self.fetch(r"/register/1/abcd1234")
+        self.assertIn("Registered index '1'", response.body)
 
-        response = self.fetch(r"/create/3/efgh3456")
-        self.assertIn("Created index '3'", response.body)
+        response = self.fetch(r"/register/3/efgh3456")
+        self.assertIn("Registered index '3'", response.body)
 
-        response = self.fetch(r"/create/100/efgh3456")
-        self.assertIn("Created index '100'", response.body)
+        response = self.fetch(r"/register/100/efgh3456")
+        self.assertIn("Registered index '100'", response.body)
 
         # Kill
-        response = self.fetch(r"/kill/3")
-        self.assertIn("Killed index '3'", response.body)
+        response = self.fetch(r"/delete/3")
+        self.assertIn("Deleted index '3'", response.body)
 
-        # TODO エラーのテスト: 数の上限を超えてcreate, 重複したindexでのcreate,
-        # 存在しないindexでのkill,
+        # TODO エラーのテスト: 数の上限を超えてregister, 重複したindexでのcreate,
+        # 存在しないindexでのdelete,
 
 
 if __name__ == '__main__':
