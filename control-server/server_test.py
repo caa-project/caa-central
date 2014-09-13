@@ -9,8 +9,9 @@ from server import DeleteHandler
 from server import OperationHandler
 from server import RobotHandler
 from tornado.testing import AsyncHTTPTestCase
-from tornado.web import Application
+import tornado.web
 import unittest
+import websocket
 
 
 class CAAControlServerTest(AsyncHTTPTestCase):
@@ -22,7 +23,7 @@ class CAAControlServerTest(AsyncHTTPTestCase):
 
         Auth.instance().set_num_max(3)
 
-        return Application([
+        return tornado.web.Application([
             (r"/register/([0-9]+)/([0-9a-zA-Z]+)", RegisterHandler),
             (r"/dump", DumpHandler),
             (r"/delete/([0-9]+)", DeleteHandler),
@@ -37,6 +38,8 @@ class CAAControlServerTest(AsyncHTTPTestCase):
 
     def testAuth(self):
         auth = Auth.instance()
+
+        self.assertEqual(3, auth.num_max())
 
         auth.register("1", "abc123")
         self.assertEqual("abc123", auth._pass_dict["1"])
@@ -73,6 +76,18 @@ class CAAControlServerTest(AsyncHTTPTestCase):
 
         # TODO エラーのテスト: 数の上限を超えてregister, 重複したindexでのcreate,
         # 存在しないindexでのdelete,
+
+    # TODO wsの接続ができない？？？
+    # def testRobotHandler(self):
+    #     """ Read here
+    #     http://www.giantflyingsaucer.com/blog/?p=4602
+    #     """
+    #     url = self.get_url("/robo/1").replace("http", "ws")
+    #     ws = websocket.create_connection(url)
+    #     RobotHandler.write_message_to("1", "hoge")
+    #     result = ws.recv()
+    #     self.assertEqual("hoge", result)
+    #     ws.close()
 
 
 if __name__ == '__main__':
