@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from server import Auth
-from server import Constants
-from server import RegisterHandler
 from server import DumpHandler
 from server import DeleteHandler
 from server import OperationHandler
+from server import RegisterHandler
 from server import RobotHandler
 from tornado.testing import AsyncHTTPTestCase
 import tornado.web
@@ -19,7 +18,6 @@ class CAAControlServerTest(AsyncHTTPTestCase):
     def get_app(self):
         """@Override"""
         self.url_base = "http://hoge.com/"
-        Constants.NUM_ROBOTS_MAX = 3
 
         Auth.instance().set_num_max(3)
 

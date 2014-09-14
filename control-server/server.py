@@ -70,10 +70,6 @@ class Auth():
         return hasattr(Auth, "_instance")
 
 
-class Constants():
-    NUM_ROBOTS_MAX = 0
-
-
 class DeleteHandler(tornado.web.RequestHandler):
 
     def get(self, index):
@@ -165,7 +161,7 @@ class OperationHandler(tornado.websocket.WebSocketHandler):
 
 
 def start_server(port=5000, num_robots_max=1):
-    Constants.NUM_ROBOTS_MAX = num_robots_max
+    Auth.set_num_max(num_robots_max)
     app = tornado.web.Application([
         (r"/delete/([0-9]+)", DeleteHandler),
         (r"/dump", DumpHandler),
