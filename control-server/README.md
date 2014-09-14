@@ -21,7 +21,7 @@ indexをクライアントが使えなくする．
 - http://host/register/(index)/(passphrase)
 index:passphraseの組を登録する．
 
-- ws://host/ws/robo/(index)
+- ws://host/robo/(index)
 ロボットとやりとりをするwebsocketのサーバ．接続数を１に制限する．
 
 - ws://host/operation/(index)/(passphrase)

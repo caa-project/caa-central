@@ -18,7 +18,7 @@ def main(argv):
         port = int(os.environ.get("PORT", 5000))
     else:
         port = gflags.FLAGS.port
-    server.start_server(port, gflags.FLAGS.num_robots)
+    server.start_server(port=port, num_robots_max=gflags.FLAGS.num_robots)
 
 if __name__ == '__main__':
     main(sys.argv)
