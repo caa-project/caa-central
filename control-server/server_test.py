@@ -55,10 +55,8 @@ class CAAControlServerTest(AsyncHTTPTestCase):
         self.assertTrue(auth.auth("1", "abc123"))
         self.assertFalse(auth.auth("1", "abc"))
 
-        self.assertEqual("1: abc123\n2: bbb222\n", auth.dump())
-
-    def testCreateAndKill(self):
-        # Create
+    def testRegisterAndDelete(self):
+        # register
         response = self.fetch(r"/register/1/abcd1234")
         self.assertIn("Registered index '1'", response.body)
 
@@ -68,12 +66,14 @@ class CAAControlServerTest(AsyncHTTPTestCase):
         response = self.fetch(r"/register/100/efgh3456")
         self.assertIn("Registered index '100'", response.body)
 
-        # Kill
+        # delete
         response = self.fetch(r"/delete/3")
         self.assertIn("Deleted index '3'", response.body)
 
-        # TODO エラーのテスト: 数の上限を超えてregister, 重複したindexでのcreate,
-        # 存在しないindexでのdelete,
+        # TODO エラーのテスト
+        # - 数の上限を超えてregister
+        # - 重複したindexでのregister,
+        # - 存在しないindexでのdelete,
 
     # TODO wsの接続ができない？？？
     # def testRobotHandler(self):

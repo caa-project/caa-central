@@ -14,9 +14,15 @@ import tornado.websocket
 
 
 class Auth():
-    """認証をするクラス
+    """Singleton class for authorization.
+    This class sotres pair of index and passphrase in a dictionary.
+    To get instance, call static method instance().
 
-    @TODO エラー起きたら例外投げよう
+    Example:
+        auth = Auth.instance()
+        auth.register("1", "abc123")
+        auth.auth("1", "abc123")    # True
+        auth.auth("1", "a")         # False
     """
     def __init__(self):
         self._pass_dict = dict()
@@ -24,16 +30,16 @@ class Auth():
 
     def register(self, index, passphrase):
         if len(self._pass_dict) >= self._num_max:
-            raise Exception(message="Too many indexes")
+            raise Exception("Too many indexes")
         if index in self._pass_dict:
-            raise Exception(message="Index already exists")
+            raise Exception("Index already exists")
         self._pass_dict[index] = passphrase
 
     def delete(self, index):
         if index in self._pass_dict:
             del self._pass_dict[index]
         else:
-            raise Exception(message="No such index")
+            raise Exception("No such index")
 
     def auth(self, index, passphrase):
         if index not in self._pass_dict:
@@ -52,12 +58,15 @@ class Auth():
 
     def dump(self):
         response = ""
+        response += "robo: %d/%d\n" % (RobotHandler.size(), self.num_max())
+        response += "client: %d/%d\n" % (len(self._pass_dict), self.num_max())
         for k, v in self._pass_dict.iteritems():
             response += "%s: %s\n" % (k, v)
         return response
 
     def _clear(self):
-        self._pass_dict = dict()
+        """Use only in tests"""
+        self._pass_dict.clear()
 
     @staticmethod
     def instance():
@@ -104,9 +113,11 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
     ws_dict = dict()
 
     def check_origin(self, origin):
+        """@Override"""
         return True
 
     def open(self, index):
+        """@Override"""
         print "open"
         # 同じindexに対して１つしか繋がない
         if index in RobotHandler.ws_dict:
@@ -118,8 +129,15 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
         else:
             print "Connected to %s" % index
             RobotHandler.ws_dict[index] = self
+            self.index = index
+
+    def on_close(self):
+        """@Override"""
+        print "Closed %s" % self.index
+        RobotHandler.ws_dict.pop(self.index)
 
     def on_message(self, response):
+        """@Override"""
         # TODO レスポンスのログをとる
         print response
 
@@ -129,11 +147,12 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
 
         UIから命令を含んだリクエストをもらったら呼ばれるよ．
         """
-        print index, "hoo"
-        print index in cls.ws_dict
         if index in cls.ws_dict:
-            print operation
             cls.ws_dict[index].write_message(operation)
+
+    @classmethod
+    def size(cls):
+        return len(RobotHandler.ws_dict)
 
 
 class OperationHandler(tornado.websocket.WebSocketHandler):
@@ -141,9 +160,11 @@ class OperationHandler(tornado.websocket.WebSocketHandler):
     ws_dict = dict()
 
     def check_origin(self, origin):
+        """@Override"""
         return True
 
     def open(self, index, passphrase):
+        """@Override"""
         if not Auth.instance().auth(index, passphrase):
             print "Auth failed"
             self.close(403, "Auth failed")
@@ -155,13 +176,18 @@ class OperationHandler(tornado.websocket.WebSocketHandler):
             OperationHandler.ws_dict[index] = self
             self.index = index
 
+    def on_close(self):
+        """@Override"""
+        print "Closed %s" % self.index
+        OperationHandler.ws_dict.pop(self.index)
+
     def on_message(self, operation):
-        print self.index
+        """@Override"""
         RobotHandler.write_message_to(self.index, operation)
 
 
 def start_server(port=5000, num_robots_max=1):
-    Auth.set_num_max(num_robots_max)
+    Auth.instance().set_num_max(num_robots_max)
     app = tornado.web.Application([
         (r"/delete/([0-9]+)", DeleteHandler),
         (r"/dump", DumpHandler),

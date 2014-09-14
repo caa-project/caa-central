@@ -7,7 +7,7 @@ import os
 import server
 
 
-gflags.DEFINE_integer("num_robots", 0, "number of robots", lower_bound=0)
+gflags.DEFINE_integer("num_robots", 1, "number of robots", lower_bound=0)
 gflags.DEFINE_integer("port", 5000, "port number the server listen on")
 
 

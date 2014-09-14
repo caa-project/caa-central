@@ -1,6 +1,12 @@
 CAA Control Server
 ==================
 
+# 概要
+- フレームワークには[tornado](http://www.tornadoweb.org/en/stable/index.html)
+- WebSocketのデバッグ用にクライアントは[websocket-client](https://github.com/liris/websocket-client)
+
+UIからAPIを叩いて登録や
+
 # API
 
 ## arguments
