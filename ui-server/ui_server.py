@@ -23,7 +23,7 @@ UVWXYZ0123456789"):
         return passphrase
 
 
-# TODO 認証をつける
+# TODO 認証をつける (http://conta.hatenablog.com/entry/2012/05/31/222940)
 class AdminHandler(tornado.web.RequestHandler):
 
     def initialize(self, control_server_url):

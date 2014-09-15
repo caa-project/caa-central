@@ -1,5 +1,21 @@
-<form method="post">
-  request <input type="text" name="request"/><br>
-  index <input type="text" name="index"/><br>
-  <input type="submit"/>
+<html>
+<head>
+<title>CAA Admin</title>
+<link href="static/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="well">
+<form method="post" class="form-horizontal">
+  <select name="request">
+    <option value="register">register</option>
+    <option value="delete">delete</option>
+  </select>
+  index <input type="text" name="index"/>
+  <button type="submit" class="btn btn-primary">submit</button>
 </form>
+</div>
+<script src="static/js/jquery-2.1.1.min.js"></script>
+<script src="static/js/bootstrap.min.js"></script>
+</body>
+
+
