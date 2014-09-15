@@ -17,3 +17,8 @@ Control Proxy
 Control Server
 ```
 
+
+# TODO
+
+- テストについて：control
+  serverを起動した状態じゃないとテストできないので，submoduleにしてテストするときに起動したほうがいいかもしれない
