@@ -5,7 +5,7 @@
 </head>
 <body>
 <div class="well">
-<form method="post" class="form-horizontal" target="frame">
+<form method="post" action="api/admin" class="form-horizontal">
   <select name="request">
     <option value="register">register</option>
     <option value="delete">delete</option>
@@ -14,7 +14,26 @@
   <button type="submit" class="btn btn-primary">submit</button>
 </form>
 </div>
-<iframe name="frame" width="100%"></iframe>
+<h3 class="bg-{{ phase }}">{{ message }}</h3>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Index</th>
+            <th>Passphrase</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for index, passphrase in indexes %}
+            {% set url = host + '/ui/' + index + '/' + passphrase %}
+            <tr>
+                <td>{{ index }}</td>
+                <td>{{ passphrase }}</td>
+                <td><a href="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl={{ url }}">QR</a></td>
+            </tr>
+        {% end %}
+    </tbody>
+</table>
 <script src="static/js/jquery-2.1.1.min.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
 </body>

@@ -32,18 +32,9 @@ class ControlProxy():
         """Fetch Json response from Control Server.
         If response is error, raise Exception with error reason
         """
-        try:
-            url = self._get_url(*path)
-            response = urllib2.urlopen(url)
-            return json.loads(response.read())
-        except urllib2.URLError as e:
-            if hasattr(e, "reason"):
-                msg = e.reason
-            elif hasattr(e, "code"):
-                msg = "Error code %d" % e.code
-            raise Exception(msg)
-        except:
-            raise Exception("Unknown error")
+        url = self._get_url(*path)
+        response = urllib2.urlopen(url)
+        return json.loads(response.read())
 
     def delete(self, index):
         return self._fetch_json("delete", index)

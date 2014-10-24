@@ -2,73 +2,50 @@
 # -*- coding: utf-8 -*-
 
 
-import control_proxy
+from ui_controller import UIController
 import json
 import os
-import random
 import tornado.httpserver
 import tornado.web
-
-
-class PassGenerator():
-    """Generate passphrase"""
-
-    def __init__(self, charset="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST\
-UVWXYZ0123456789"):
-        self.charset = charset
-
-    def generate(self, length=64):
-        passphrase = ""
-        for i in range(length):
-            passphrase += random.choice(self.charset)
-        return passphrase
 
 
 # TODO 認証をつける (http://conta.hatenablog.com/entry/2012/05/31/222940)
 class AdminHandler(tornado.web.RequestHandler):
 
-    pass_dict = dict()  # index: passphrase
-
-    def initialize(self, control_server_url):
-        self.control_server_url = control_server_url
-        self.control_proxy = control_proxy.ControlProxy(control_server_url)
-        self.pass_generator = PassGenerator()
+    def initialize(self, host, controller):
+        self.host = host
+        self.controller = controller
 
     def get(self):
-        self.render("admin.html")
+        phase, message = self.controller.get_message()
+        kwargs = {
+                "host" : self.host,
+                "indexes": [item for item in self.controller.indexes()],
+                "phase": phase,
+                "message": message
+            }
+        self.render("admin.html", **kwargs)
+
+
+class AdminAPIHandler(tornado.web.RequestHandler):
+
+    def initialize(self, controller):
+        self.controller = controller
 
     def post(self):
         request = self.get_argument("request")
 
         if request == "register":
             index = self.get_argument("index")
-            passphrase = self.pass_generator.generate()
-            try:
-                response = self.control_proxy.register(index, passphrase)
-                UIHandler.add_pass(index, passphrase)
-                AdminHandler.pass_dict[index] = passphrase
-                self.write("Registered "+index+":"+passphrase)
-            except Exception as e:
-                msg = "Error: "+e.message
-                print msg
-                self.write(msg)
-            except:
-                self.write("Unknown error")
+            response = self.controller.register(index)
+            #self.write(json.dumps(response))
         elif request == "delete":
-            try:
-                index = self.get_argument("index")
-                response = self.control_proxy.delete(index)
-                passphrase = AdminHandler.pass_dict.pop(index)
-                UIHandler.remove_pass(index, passphrase)
-                self.write("Deleted "+json.dumps(response))
-            except Exception as e:
-                msg = "Error: "+e.message
-                print msg
-                self.write(msg)
-            except:
-                self.write("Unknown error")
+            index = self.get_argument("index")
+            response = self.controller.delete(index)
+            #self.write(json.dumps(response))
         else:
-            self.write("wow")
+            self.set_status(400)
+        self.redirect('/admin')
 
 
 class UIHandler(tornado.web.RequestHandler):
@@ -78,12 +55,15 @@ class UIHandler(tornado.web.RequestHandler):
 
     pass_set = set()    # 今見せている(index, passphrase)
 
+    def initialize(self, controller):
+        self.controller = controller
+
     def get(self, index, passphrase):
-        if (index, passphrase) in UIHandler.pass_set:
-            # TODO render html
-            self.write("Hello %s" % (index))
+        if self.controller.auth(index, passphrase):
+            self.render("ui.html", index=index)
         else:
-            self.write_error(403)
+            self.set_status(403)
+            #self.write_error(403)
 
     @classmethod
     def add_pass(cls, index, passphrase):
@@ -102,10 +82,12 @@ class DefaultHandler(tornado.web.RequestHandler):
 
 
 def start_server(port=5001, control_server_url="http://localhost:5000"):
+    controller = UIController(control_server_url)
     handlers = [
         (r"/", DefaultHandler),
-        (r"/admin", AdminHandler, dict(control_server_url=control_server_url)),
-        (r"/ui/([0-9]+)/([0-9a-zA-Z]+)", UIHandler),
+        (r"/admin", AdminHandler, dict(host='http://localhost:5001', controller=controller)),
+        (r"/api/admin", AdminAPIHandler, dict(controller=controller)),
+        (r"/ui/([0-9]+)/([0-9a-zA-Z]+)", UIHandler, dict(controller = controller)),
     ]
     settings = dict(
         static_path=os.path.join(os.path.dirname(__file__), "static"),
