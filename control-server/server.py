@@ -1,116 +1,44 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Control Server
-
-@TODO
-- UI Server以外の接続に対しエラー
-"""
-
+from container import ClientContainer
 
 import tornado.httpserver
 import tornado.web
 import tornado.websocket
+import json
+import logging
 
+logger = logging.getLogger("caa.control.api")
 
-class Auth():
-    """Singleton class for authorization.
-    This class sotres pair of index and passphrase in a dictionary.
-    To get instance, call static method instance().
+def exception(handler, error):
+    logger.exception(e)
+    handler.write(json.dumps({
+        'succeeded': False,
+        'message': str(error)
+    }))
 
-    Example:
-        auth = Auth.instance()
-        auth.register("1", "abc123")
-        auth.auth("1", "abc123")    # True
-        auth.auth("1", "a")         # False
-    """
-    def __init__(self):
-        self._pass_dict = dict()
-        self._num_max = 1
-
-    def register(self, index, passphrase):
-        if len(self._pass_dict) >= self._num_max:
-            raise Exception("Too many indexes")
-        if index in self._pass_dict:
-            raise Exception("Index already exists")
-        self._pass_dict[index] = passphrase
-
-    def delete(self, index):
-        if index in self._pass_dict:
-            del self._pass_dict[index]
-        else:
-            raise Exception("No such index")
-
-    def auth(self, index, passphrase):
-        if index not in self._pass_dict:
-            return False
-        if self._pass_dict[index] == passphrase:
-            return True
-        else:
-            return False
-
-    def set_num_max(self, num):
-        """登録できる最大数の設定"""
-        self._num_max = num
-
-    def num_max(self):
-        return self._num_max
-
-    def dump(self):
-        response = ""
-        response += "robo: %d/%d\n" % (RobotHandler.size(), self.num_max())
-        response += "client: %d/%d\n" % (len(self._pass_dict), self.num_max())
-        for k, v in self._pass_dict.iteritems():
-            response += "%s: %s\n" % (k, v)
-        return response
-
-    def _clear(self):
-        """Use only in tests"""
-        self._pass_dict.clear()
-
-    @staticmethod
-    def instance():
-        if not hasattr(Auth, "_instance"):
-            Auth._instance = Auth()
-        return Auth._instance
-
-    @staticmethod
-    def initialized():
-        return hasattr(Auth, "_instance")
-
-
-class DeleteHandler(tornado.web.RequestHandler):
-
-    def get(self, index):
-        # TODO mutex lock
-        try:
-            Auth.instance().delete(index)
-            self.write("Deleted index '%s'" % index)
-        except Exception as e:
-            print e.message
-            self.set_status(500, e.message)
-
-
-class RegisterHandler(tornado.web.RequestHandler):
-
-    def get(self, index, passphrase):
-        try:
-            Auth.instance().register(index, passphrase)
-            self.write("Registered index '%s'" % index)
-        except Exception as e:
-            print e.message
-            self.set_status(500, e.message)
-
-
-class DumpHandler(tornado.web.RequestHandler):
+class RobotRegisterHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.write(Auth.instance().dump().replace("\n", "<br>"))
+        container = ClientContainer.instance()
+        try:
+            index = container.add()
+            self.write(json.dumps({
+                'succeeded': True,
+                'index': index
+            }))
+        except Exception as e:
+            exception(self, e)
 
 
-class RobotHandler(tornado.websocket.WebSocketHandler):
+class RobotDeleteHandler(tornado.web.RequestHandler):
 
-    ws_dict = dict()
+    def get(self, index):
+        container = ClientContainer.instance()
+        container.delete_robot_ws(index)
+
+
+class RobotSocketHandler(tornado.websocket.WebSocketHandler):
 
     def check_origin(self, origin):
         """@Override"""
@@ -118,46 +46,48 @@ class RobotHandler(tornado.websocket.WebSocketHandler):
 
     def open(self, index):
         """@Override"""
-        print "open"
-        # 同じindexに対して１つしか繋がない
-        if index in RobotHandler.ws_dict:
-            print "Already exits"
-            self.close(403, "Already exits")
-        elif len(RobotHandler.ws_dict) >= Auth.instance().num_max():
-            print "Too many"
-            self.close(403, "Too many")
-        else:
-            print "Connected to %s" % index
-            RobotHandler.ws_dict[index] = self
-            self.index = index
+        self.index = index
+        container = ClientContainer.instance()
+        try:
+            container.register_robot_ws(self)
+        except Exception as e:
+            exception(self, e)
 
     def on_close(self):
         """@Override"""
-        print "Closed %s" % self.index
-        RobotHandler.ws_dict.pop(self.index)
+        ClientContainer.instance().delete_robot(self.index)
 
     def on_message(self, response):
         """@Override"""
-        # TODO レスポンスのログをとる
-        print response
-
-    @classmethod
-    def write_message_to(cls, index, operation):
-        """ロボットに命令を送る
-
-        UIから命令を含んだリクエストをもらったら呼ばれるよ．
-        """
-        if index in cls.ws_dict:
-            cls.ws_dict[index].write_message(operation)
-
-    @classmethod
-    def size(cls):
-        return len(RobotHandler.ws_dict)
+        ClientContainer.instance().send_to_user(self.index, response)
 
 
-class OperationHandler(tornado.websocket.WebSocketHandler):
+class UserRegisterHandler(tornado.web.RequestHandler):
 
-    ws_dict = dict()
+    def get(self, index, passphrase):
+        container = ClientContainer.instance()
+        try:
+            container.register_passphrase(index, passphrase)
+            self.write(json.dumps({
+                'succeeded': True
+            }))
+        except Exception as e:
+            exception(self, e)
+
+    def post(self):
+        index = self.get_argument('index')
+        passphrase = self.get_argument('passphrase')
+        self.get(index, passphrase)
+
+
+class UserDeleteHandler(tornado.web.RequestHandler):
+
+    def get(self, index):
+        container = ClientContainer.instance()
+        container.delete_user(index)
+
+
+class UserSocketHandler(tornado.websocket.WebSocketHandler):
 
     def check_origin(self, origin):
         """@Override"""
@@ -165,35 +95,38 @@ class OperationHandler(tornado.websocket.WebSocketHandler):
 
     def open(self, index, passphrase):
         """@Override"""
-        if not Auth.instance().auth(index, passphrase):
-            print "Auth failed"
-            self.close(403, "Auth failed")
-        elif index in OperationHandler.ws_dict:
-            print "Already exits"
-            self.close(403, "Already exits")
-        else:
-            print "Connected to %s" % index
-            OperationHandler.ws_dict[index] = self
-            self.index = index
+        self.index = index
+        container = ClientContainer.instance()
+        try:
+            container.register_user_ws(self)
+        except Exception as e:
+            exception(self, e)
 
     def on_close(self):
         """@Override"""
-        print "Closed %s" % self.index
-        OperationHandler.ws_dict.pop(self.index)
+        ClientContainer.instance().delete_user_ws(self.index)
 
-    def on_message(self, operation):
+    def on_message(self, response):
         """@Override"""
-        RobotHandler.write_message_to(self.index, operation)
+        ClientContainer.instance().send_to_robot(self.index, response)
+
+
+class ClientsHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        container = ClientContainer.instance()
+        self.write(json.dumps(container.get_clients()))
 
 
 def start_server(port=5000, num_robots_max=1):
-    Auth.instance().set_num_max(num_robots_max)
     app = tornado.web.Application([
-        (r"/delete/([0-9]+)", DeleteHandler),
-        (r"/dump", DumpHandler),
-        (r"/operation/([0-9]+)/([0-9a-zA-Z]+)", OperationHandler),
-        (r"/register/([0-9]+)/([0-9a-zA-Z]+)", RegisterHandler),
-        (r"/robo/([0-9]+)", RobotHandler),
+        (r"/robo/register", RobotRegisterHandler),
+        (r"/robo/delete", RobotDeleteHandler),
+        (r"/robo/([0-9]+)", RobotSocketHandler),
+        (r"/user/register", UserRegisterHandler),
+        (r"/user/delete", UserDeleteHandler),
+        (r"/user/([0-9]+)/([0-9a-zA-Z]+)", UserSocketHandler),
+        (r"/clients", ClientsHandler)
     ])
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(port)
