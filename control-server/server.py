@@ -11,11 +11,15 @@ import logging
 logger = logging.getLogger("caa.control.api")
 
 def exception(handler, error):
-    logger.exception(e)
+    logger.exception(error)
     handler.write(json.dumps({
         'succeeded': False,
         'message': str(error)
     }))
+
+def exception_on_socket(handler, no, error):
+    logger.exception(error)
+    handler.close(no, str(error))
 
 class RobotRegisterHandler(tornado.web.RequestHandler):
 
@@ -29,13 +33,16 @@ class RobotRegisterHandler(tornado.web.RequestHandler):
             }))
         except Exception as e:
             exception(self, e)
+        self.finish()
 
 
 class RobotDeleteHandler(tornado.web.RequestHandler):
 
-    def get(self, index):
+    def get(self):
+        index = self.get_argument('index')
         container = ClientContainer.instance()
-        container.delete_robot_ws(index)
+        container.delete_robot(index)
+        self.finish()
 
 
 class RobotSocketHandler(tornado.websocket.WebSocketHandler):
@@ -51,7 +58,7 @@ class RobotSocketHandler(tornado.websocket.WebSocketHandler):
         try:
             container.register_robot_ws(self)
         except Exception as e:
-            exception(self, e)
+            exception_on_socket(self, 403, e)
 
     def on_close(self):
         """@Override"""
@@ -64,7 +71,15 @@ class RobotSocketHandler(tornado.websocket.WebSocketHandler):
 
 class UserRegisterHandler(tornado.web.RequestHandler):
 
-    def get(self, index, passphrase):
+    def get(self):
+        self.register()
+
+    def post(self):
+        self.register()
+
+    def register(self):
+        index = self.get_argument('index')
+        passphrase = self.get_argument('passphrase')
         container = ClientContainer.instance()
         try:
             container.register_passphrase(index, passphrase)
@@ -73,18 +88,16 @@ class UserRegisterHandler(tornado.web.RequestHandler):
             }))
         except Exception as e:
             exception(self, e)
-
-    def post(self):
-        index = self.get_argument('index')
-        passphrase = self.get_argument('passphrase')
-        self.get(index, passphrase)
+        self.finish()
 
 
 class UserDeleteHandler(tornado.web.RequestHandler):
 
-    def get(self, index):
+    def get(self):
+        index = self.get_argument('index')
         container = ClientContainer.instance()
         container.delete_user(index)
+        self.finish()
 
 
 class UserSocketHandler(tornado.websocket.WebSocketHandler):
@@ -95,12 +108,15 @@ class UserSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self, index, passphrase):
         """@Override"""
-        self.index = index
         container = ClientContainer.instance()
+        if not container.auth(index, passphrase):
+            self.write("")
+            return
+        self.index = index
         try:
             container.register_user_ws(self)
         except Exception as e:
-            exception(self, e)
+            exception_on_socket(self, 403, e)
 
     def on_close(self):
         """@Override"""
@@ -116,6 +132,7 @@ class ClientsHandler(tornado.web.RequestHandler):
     def get(self):
         container = ClientContainer.instance()
         self.write(json.dumps(container.get_clients()))
+        self.finish()
 
 
 def start_server(port=5000, num_robots_max=1):

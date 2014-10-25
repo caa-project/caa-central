@@ -10,6 +10,7 @@ class ClientContainerItem():
         self.user_ws = None
         self.passphrase = None
 
+
 class ClientContainer():
 
     _instance = None
@@ -85,7 +86,10 @@ class ClientContainer():
             self._clients[index].user_ws.write_message(message)
 
     def get_clients(self):
-        return self._clients
+        retval = {}
+        for index in self._clients:
+            retval[index] = self._clients[index].__dict__
+        return retval
 
     @classmethod
     def instance(cls):
