@@ -49,7 +49,7 @@ class AdminHandler(tornado.web.RequestHandler):
                 AdminHandler.pass_dict[index] = passphrase
                 self.write("Registered "+index+":"+passphrase)
             except Exception as e:
-                msg = "Error: "+e.message
+                msg = "Error: "+str(e)
                 print msg
                 self.write(msg)
             except:
@@ -62,7 +62,7 @@ class AdminHandler(tornado.web.RequestHandler):
                 UIHandler.remove_pass(index, passphrase)
                 self.write("Deleted "+json.dumps(response))
             except Exception as e:
-                msg = "Error: "+e.message
+                msg = "Error: "+str(e)
                 print msg
                 self.write(msg)
             except:
@@ -74,14 +74,14 @@ class AdminHandler(tornado.web.RequestHandler):
 class UIHandler(tornado.web.RequestHandler):
     """index:passphraseに対応したページを提供するよ
     このページを見ている時点で認証できていることにするので，特に認証しないよ．
+    passphraseがランダムで長いためurlを推測することが困難なことが根拠だよ．
     """
 
     pass_set = set()    # 今見せている(index, passphrase)
 
     def get(self, index, passphrase):
         if (index, passphrase) in UIHandler.pass_set:
-            # TODO render html
-            self.write("Hello %s" % (index))
+            self.render("ui.html")
         else:
             self.write_error(403)
 
@@ -101,7 +101,8 @@ class DefaultHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 
-def start_server(port=5001, control_server_url="http://localhost:5000"):
+def start_server(port=5001, control_server_url="http://localhost:5000",
+                 debug_index_pass=None):
     handlers = [
         (r"/", DefaultHandler),
         (r"/admin", AdminHandler, dict(control_server_url=control_server_url)),
@@ -115,4 +116,8 @@ def start_server(port=5001, control_server_url="http://localhost:5000"):
 
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(port)
+
+    if debug_index_pass:
+        UIHandler.add_pass(*debug_index_pass)
+
     tornado.ioloop.IOLoop.instance().start()
