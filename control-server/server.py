@@ -41,7 +41,10 @@ class RobotDeleteHandler(tornado.web.RequestHandler):
     def get(self):
         index = self.get_argument('index')
         container = ClientContainer.instance()
-        container.delete_robot(index)
+        if container.delete_robot(index):
+            self.write(json.dumps({'succeeded': True}))
+        else:
+            self.write(json.dumps({'succeeded': False}))
         self.finish()
 
 
@@ -96,7 +99,10 @@ class UserDeleteHandler(tornado.web.RequestHandler):
     def get(self):
         index = self.get_argument('index')
         container = ClientContainer.instance()
-        container.delete_user(index)
+        if container.delete_user(index):
+            self.write(json.dumps({'succeeded': True}))
+        else:
+            self.write(json.dumps({'succeeded': False}))
         self.finish()
 
 

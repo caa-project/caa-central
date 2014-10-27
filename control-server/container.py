@@ -49,6 +49,8 @@ class ClientContainer():
         if index in self._clients:
             #self._clients[index].robot_ws = None
             self._clients.pop(index)
+            return True
+        return False
 
     def register_passphrase(self, index, passphrase):
         if index not in self._clients:
@@ -67,10 +69,14 @@ class ClientContainer():
     def delete_user_ws(self, index):
         if index in self._clients:
             self._clients[index].user_ws = None
+            return True
+        return False
 
     def delete_user(self, index):
         if index in self._clients:
             self._clients[index].clear_user()
+            return True
+        return False
 
     def auth(self, index, passphrase):
         if index in self._clients and self._clients[index].passphrase == passphrase:
