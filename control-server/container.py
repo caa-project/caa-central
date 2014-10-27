@@ -95,6 +95,12 @@ class ClientContainer():
         retval = {}
         for index in self._clients:
             retval[index] = self._clients[index].__dict__
+            if retval[index]['passphrase'] is None:
+                retval[index]['occupied'] = False
+            else:
+                retval[index]['occupied'] = True
+
+            del retval[index]['passphrase']
         return retval
 
     @classmethod

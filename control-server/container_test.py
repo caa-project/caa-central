@@ -60,5 +60,17 @@ class ClientContainerTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self.container.register_robot_ws(WS(index))
 
+    def test_clients(self):
+        index = self.container.add()
+        self.container.register_robot_ws(WS(index))
+        self.container.register_passphrase(index, 'passphrase')
+        self.container.register_user_ws(WS(index))
+        client_dict = self.container.get_clients()
+        self.assertIn('0', client_dict)
+        self.assertIn('robot_ws', client_dict['0'])
+        self.assertIn('user_ws', client_dict['0'])
+        self.assertNotIn('passphrase', client_dict['0'])
+        self.assertIn('occupied', client_dict['0'])
+
 if __name__ == '__main__':
     unittest.main()
