@@ -41,18 +41,20 @@ class UIController():
             else:
                 self.danger(response['message'])
         except Exception as e:
-            error(e)
             self.error(e)
         except:
             self.danger("Unknown error")
         return False
 
     def delete(self, index):
+        if index not in self._pass_dict:
+            self.danger('Do not have an access to %s' % index)
+            return False
         try:
-            response = self.control_proxy.delete(index)
+            passphrase = self._pass_dict[index]
+            response = self.control_proxy.delete(index, passphrase)
             if response['succeeded']:
-                if index in self._pass_dict:
-                    passphrase = self._pass_dict.pop(index)
+                self._pass_dict.pop(index)
                 self.success("Deleted %s" % index)
                 return True
             else:
@@ -63,9 +65,15 @@ class UIController():
             self.danger("Unknown error")
         return False
 
+    def get_clients(self):
+        try:
+            return self.control_proxy.get_clients()
+        except Exception as e:
+            self.error(e)
+        return {}
+
     def indexes(self):
-        for index in self._pass_dict:
-            yield (index, self._pass_dict[index])
+        return self._pass_dict
 
     def auth(self, index, passphrase):
         return index in self._pass_dict and self._pass_dict[index] == passphrase

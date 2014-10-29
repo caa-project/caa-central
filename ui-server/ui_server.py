@@ -18,13 +18,15 @@ class AdminHandler(tornado.web.RequestHandler):
 
     def get(self):
         phase, message = self.controller.get_message()
-        kwargs = {
-                "host" : self.host,
-                "indexes": [item for item in self.controller.indexes()],
-                "phase": phase,
-                "message": message
-            }
-        self.render("admin.html", **kwargs)
+        clients = self.controller.get_clients()
+        indexes = self.controller.indexes()
+        for index in clients:
+            if index in indexes:
+                clients[index]['passphrase'] = indexes[index]
+            else:
+                clients[index]['passphrase'] = None
+        self.render("admin.html", host=self.host, clients=clients,
+                phase=phase, message=message)
 
 
 class AdminAPIHandler(tornado.web.RequestHandler):
@@ -45,6 +47,7 @@ class AdminAPIHandler(tornado.web.RequestHandler):
             #self.write(json.dumps(response))
         else:
             self.set_status(400)
+
         self.redirect('/admin')
 
 

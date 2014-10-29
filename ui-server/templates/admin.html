@@ -20,16 +20,24 @@
         <tr>
             <th>Index</th>
             <th>Passphrase</th>
-            <th></th>
+            <th>Using</th>
+            <th>QR</th>
         </tr>
     </thead>
     <tbody>
-        {% for index, passphrase in indexes %}
-            {% set url = host + '/ui/' + index + '/' + passphrase %}
+        {% for index  in clients %}
+            {% set client = clients[index] %}
             <tr>
+                {% set passphrase = client['passphrase'] %}
                 <td>{{ index }}</td>
                 <td>{{ passphrase }}</td>
-                <td><a href="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl={{ url }}">QR</a></td>
+                <td>{{ client['using'] }}</td>
+                {% if passphrase is not None %}
+                    {% set url = '%s/ui/%s/%s' % (host, index, passphrase) %}
+                    <td><a href="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl={{ url }}">show</a></td>
+                {% else %}
+                    <td></td>
+                {% end %}
             </tr>
         {% end %}
     </tbody>
