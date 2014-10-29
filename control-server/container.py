@@ -10,6 +10,15 @@ class ClientContainerItem():
         self.user_ws = None
         self.passphrase = None
 
+    def __iter__(self):
+        return self.__dict__.iteritems()
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+
 
 class ClientContainer():
 
@@ -91,11 +100,13 @@ class ClientContainer():
     def get_clients(self):
         retval = {}
         for index in self._clients:
-            retval[index] = self._clients[index].__dict__
+            retval[index] = {}
+            for key, value in self._clients[index]:
+                retval[index][key] = value
             if retval[index]['passphrase'] is None:
-                retval[index]['occupied'] = False
+                retval[index]['using'] = False
             else:
-                retval[index]['occupied'] = True
+                retval[index]['using'] = True
 
             del retval[index]['passphrase']
         return retval

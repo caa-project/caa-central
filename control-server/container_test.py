@@ -73,7 +73,13 @@ class ClientContainerTest(unittest.TestCase):
         self.assertIn('robot_ws', client_dict[index])
         self.assertIn('user_ws', client_dict[index])
         self.assertNotIn('passphrase', client_dict[index])
-        self.assertIn('occupied', client_dict[index])
+        self.assertIn('using', client_dict[index])
+        client_dict = self.container.get_clients()
+        self.assertIn(index, client_dict)
+        self.assertIn('robot_ws', client_dict[index])
+        self.assertIn('user_ws', client_dict[index])
+        self.assertNotIn('passphrase', client_dict[index])
+        self.assertIn('using', client_dict[index])
 
 if __name__ == '__main__':
     unittest.main()

@@ -143,6 +143,7 @@ class ClientsHandler(tornado.web.RequestHandler):
 
 
 def start_server(port=5000, num_robots_max=1):
+    ClientContainer.instance().set_num_max(num_robots_max)
     app = tornado.web.Application([
         (r"/robo/register", RobotRegisterHandler),
         (r"/robo/delete", RobotDeleteHandler),
