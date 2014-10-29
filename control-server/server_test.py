@@ -29,27 +29,27 @@ class CAAControlServerTest(AsyncHTTPTestCase):
         ClientContainer._instance = ClientContainer()
 
     def test_register(self):
-        response0 = json.loads(self.fetch(r"/robo/register").body)
+        response0 = json.loads(self.fetch(r"/robo/register?index=1024").body)
         self.assertTrue(response0['succeeded'])
-        self.assertEqual(response0['index'], str(0))
+        self.assertEqual(response0['index'], '1024')
 
         response1 = json.loads(
-                self.fetch(r"/user/register?index=0&passphrase=hogehoge").body)
+                self.fetch(r"/user/register?index=1024&passphrase=hogehoge").body)
         self.assertTrue(response1['succeeded'])
 
     def test_delete(self):
-        response0 = json.loads(self.fetch(r"/robo/register").body)
+        response0 = json.loads(self.fetch(r"/robo/register?index=1024").body)
         self.assertTrue(response0['succeeded'])
-        self.assertEqual(response0['index'], str(0))
+        self.assertEqual(response0['index'], '1024')
 
         response1 = json.loads(
-                self.fetch(r"/user/register?index=0&passphrase=hogehoge").body)
+                self.fetch(r"/user/register?index=1024&passphrase=hogehoge").body)
         self.assertTrue(response1['succeeded'])
 
-        response2 = json.loads(self.fetch(r"/user/delete?index=0").body)
+        response2 = json.loads(self.fetch(r"/user/delete?index=1024").body)
         self.assertTrue(response2['succeeded'])
 
-        response3 = json.loads(self.fetch(r"/robo/delete?index=0").body)
+        response3 = json.loads(self.fetch(r"/robo/delete?index=1024").body)
         self.assertTrue(response3['succeeded'])
 
 if __name__ == '__main__':

@@ -28,15 +28,12 @@ class ClientContainer():
     def get_num_max(self):
         return self._num_max
 
-    def add(self):
+    def add(self, index):
         if len(self._clients) >= self._num_max:
             raise Exception('Can not register more clients')
-        for i in range(self._num_max):
-            index = str(i)
-            if index not in self._clients:
-                self._clients[index] = ClientContainerItem()
-                return index
-        raise Exception('Something wrong has occered!')
+        if index in self._clients:
+            raise Exception('%s is already used.' % index)
+        self._clients[index] = ClientContainerItem()
 
     def register_robot_ws(self, ws):
         if ws.index not in self._clients:

@@ -24,9 +24,10 @@ def exception_on_socket(handler, no, error):
 class RobotRegisterHandler(tornado.web.RequestHandler):
 
     def get(self):
+        index = self.get_argument('index')
         container = ClientContainer.instance()
         try:
-            index = container.add()
+            container.add(index)
             self.write(json.dumps({
                 'succeeded': True,
                 'index': index

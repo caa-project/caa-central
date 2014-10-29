@@ -19,20 +19,21 @@ class ClientContainerTest(unittest.TestCase):
 
     def test_add(self):
         self.assertEqual(len(self.container.get_clients()), 0)
-        self.assertEqual(self.container.add(), str(0))
+        self.container.add('1024')
         self.assertEqual(len(self.container.get_clients()), 1)
 
     def test_set_num_max(self):
         self.assertTrue(self.container.set_num_max(3))
-        self.assertEqual(self.container.add(), str(0))
-        self.assertEqual(self.container.add(), str(1))
-        self.assertEqual(self.container.add(), str(2))
+        self.container.add('1024')
+        self.container.add('2')
+        self.container.add('512')
         with self.assertRaises(Exception):
             self.container.add()
         self.assertFalse(self.container.set_num_max(2))
 
     def test_register(self):
-        index = self.container.add()
+        index = '1024'
+        self.container.add(index)
         self.container.register_robot_ws(WS(index))
         with self.assertRaises(Exception):
             self.container.register_robot_ws(WS(index))
@@ -44,7 +45,8 @@ class ClientContainerTest(unittest.TestCase):
             self.container.register_user_ws(WS(index))
 
     def test_delete(self):
-        index = self.container.add()
+        index = '1024'
+        self.container.add(index)
         self.container.register_robot_ws(WS(index))
         self.container.register_passphrase(index, 'passphrase')
         self.container.register_user_ws(WS(index))
@@ -61,16 +63,17 @@ class ClientContainerTest(unittest.TestCase):
             self.container.register_robot_ws(WS(index))
 
     def test_clients(self):
-        index = self.container.add()
+        index = '1024'
+        self.container.add(index)
         self.container.register_robot_ws(WS(index))
         self.container.register_passphrase(index, 'passphrase')
         self.container.register_user_ws(WS(index))
         client_dict = self.container.get_clients()
-        self.assertIn('0', client_dict)
-        self.assertIn('robot_ws', client_dict['0'])
-        self.assertIn('user_ws', client_dict['0'])
-        self.assertNotIn('passphrase', client_dict['0'])
-        self.assertIn('occupied', client_dict['0'])
+        self.assertIn(index, client_dict)
+        self.assertIn('robot_ws', client_dict[index])
+        self.assertIn('user_ws', client_dict[index])
+        self.assertNotIn('passphrase', client_dict[index])
+        self.assertIn('occupied', client_dict[index])
 
 if __name__ == '__main__':
     unittest.main()
