@@ -5,6 +5,7 @@
 from ui_controller import UIController
 import json
 import os
+import signal
 import tornado.httpserver
 import tornado.web
 
@@ -12,8 +13,7 @@ import tornado.web
 # TODO 認証をつける (http://conta.hatenablog.com/entry/2012/05/31/222940)
 class AdminHandler(tornado.web.RequestHandler):
 
-    def initialize(self, host, controller):
-        self.host = host
+    def initialize(self, controller):
         self.controller = controller
 
     def get(self):
@@ -25,7 +25,8 @@ class AdminHandler(tornado.web.RequestHandler):
                 clients[index]['passphrase'] = indexes[index]
             else:
                 clients[index]['passphrase'] = None
-        self.render("admin.html", host=self.host, clients=clients,
+        host = self.request.host
+        self.render("admin.html", host=host, clients=clients,
                 phase=phase, message=message)
 
 
@@ -63,7 +64,8 @@ class UIHandler(tornado.web.RequestHandler):
 
     def get(self, index, passphrase):
         if self.controller.auth(index, passphrase):
-            self.render("ui.html", index=index)
+            self.render("ui.html", index=index,
+                    server_url=self.controller.control_server_url)
         else:
             self.set_status(403)
             #self.write_error(403)
@@ -86,11 +88,17 @@ class DefaultHandler(tornado.web.RequestHandler):
 
 def start_server(port=5001, control_server_url="http://localhost:5000"):
     controller = UIController(control_server_url)
+
+    def signal_term_handler(signum, frame):
+        controller.clear()
+        sys.exit(0)
+    signal.signal(signal.SIGTERM, signal_term_handler)
+
     handlers = [
         (r"/", DefaultHandler),
-        (r"/admin", AdminHandler, dict(host='http://localhost:5001', controller=controller)),
+        (r"/admin", AdminHandler, dict(controller=controller)),
         (r"/api/admin", AdminAPIHandler, dict(controller=controller)),
-        (r"/ui/([0-9]+)/([0-9a-zA-Z]+)", UIHandler, dict(controller = controller)),
+        (r"/ui/([0-9a-zA-Z]+)/([0-9a-zA-Z]+)", UIHandler, dict(controller = controller)),
     ]
     settings = dict(
         static_path=os.path.join(os.path.dirname(__file__), "static"),

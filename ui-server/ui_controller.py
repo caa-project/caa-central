@@ -24,7 +24,8 @@ class UIController():
 
     def __init__(self, control_server_url):
         self._pass_dict = {}
-        self.control_proxy = control_proxy.ControlProxy(control_server_url)
+        self.control_server_url = control_server_url
+        self.proxy = control_proxy.ControlProxy(control_server_url)
         self.pass_generator = PassGenerator()
         self.logger = logging.getLogger('caa.ui_controller')
         self.logger.setLevel(logging.DEBUG)
@@ -33,7 +34,7 @@ class UIController():
     def register(self, index):
         passphrase = self.pass_generator.generate()
         try:
-            response = self.control_proxy.register(index, passphrase)
+            response = self.proxy.register(index, passphrase)
             if 'succeeded' in response and response['succeeded']:
                 self._pass_dict[index] = passphrase
                 self.success("Registered %s : %s" % (index, passphrase))
@@ -52,7 +53,7 @@ class UIController():
             return False
         try:
             passphrase = self._pass_dict[index]
-            response = self.control_proxy.delete(index, passphrase)
+            response = self.proxy.delete(index, passphrase)
             if response['succeeded']:
                 self._pass_dict.pop(index)
                 self.success("Deleted %s" % index)
@@ -67,13 +68,18 @@ class UIController():
 
     def get_clients(self):
         try:
-            return self.control_proxy.get_clients()
+            return self.proxy.get_clients()
         except Exception as e:
             self.error(e)
         return {}
 
     def indexes(self):
         return self._pass_dict
+
+    def clear(self):
+        for index in self._pass_dict:
+            self.proxy.delete(index, self._pass_dict[index])
+        self._pass_dict.clear()
 
     def auth(self, index, passphrase):
         return index in self._pass_dict and self._pass_dict[index] == passphrase
