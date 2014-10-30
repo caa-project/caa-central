@@ -66,7 +66,7 @@ class RobotSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         """@Override"""
-        ClientContainer.instance().delete_robot(self.index)
+        ClientContainer.instance().delete_robot_ws(self.index)
 
     def on_message(self, response):
         """@Override"""

@@ -51,6 +51,12 @@ class ClientContainer():
             raise Exception('Already registered at the index %s.' % ws.index)
         self._clients[ws.index].robot_ws = ws
 
+    def delete_robot_ws(self, index):
+        if index in self._clients:
+            self._clients[index].robot_ws = None
+            return True
+        return False
+
     def delete_robot(self, index):
         if index in self._clients:
             #self._clients[index].robot_ws = None
