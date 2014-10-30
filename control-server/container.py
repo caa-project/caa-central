@@ -103,10 +103,9 @@ class ClientContainer():
             retval[index] = {}
             for key, value in self._clients[index]:
                 retval[index][key] = value
-            if retval[index]['passphrase'] is None:
-                retval[index]['using'] = False
-            else:
-                retval[index]['using'] = True
+            retval[index]['using'] = retval[index]['passphrase'] is not None
+            retval[index]['robot_ws'] = retval[index]['robot_ws'] is not None
+            retval[index]['user_ws'] = retval[index]['user_ws'] is not None
 
             del retval[index]['passphrase']
         return retval
