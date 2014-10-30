@@ -2,10 +2,7 @@ function endsWith(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 };
 
-function open_websocket(server_url) {
-    var splitted = location.href.split('/')
-    var passphrase = splitted.pop()
-    var index = splitted.pop()
+function open_websocket(server_url, index, passphrase) {
     var ws = new WebSocket("ws://" + server_url + "/user/" + index + "/" + passphrase);
     //接続開始時の処理
     ws.onopen = function () {
@@ -34,7 +31,7 @@ function open_websocket(server_url) {
     //切断時の処理
     ws.onclose = function(e) {
       //ヘッダーに赤地白文字でメッセージを出す
-      $("#info_bar").text("connection to " + url + " is closed");
+      $("#info_bar").text("connection to " + server_url + " is closed");
       $("#headerbg").css("background", "#822222");
     }
     function send_view_data() {

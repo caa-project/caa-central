@@ -64,7 +64,7 @@ class UIHandler(tornado.web.RequestHandler):
 
     def get(self, index, passphrase):
         if self.controller.auth(index, passphrase):
-            self.render("ui.html", index=index,
+            self.render("ui.html", index=index, passphrase=passphrase,
                     server_url=self.controller.control_server_url)
         else:
             self.set_status(403)
