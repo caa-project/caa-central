@@ -6,6 +6,7 @@ from ui_controller import UIController
 import json
 import os
 import signal
+from urlparse import urlparse
 import tornado.httpserver
 import tornado.web
 
@@ -26,7 +27,7 @@ class AdminHandler(tornado.web.RequestHandler):
             else:
                 clients[index]['passphrase'] = None
         host = self.request.host
-        self.render("admin.html", host=host, clients=clients,
+        self.render("admin.html", host='http://%s' % host, clients=clients,
                 phase=phase, message=message)
 
 
@@ -65,7 +66,7 @@ class UIHandler(tornado.web.RequestHandler):
     def get(self, index, passphrase):
         if self.controller.auth(index, passphrase):
             self.render("ui.html", index=index, passphrase=passphrase,
-                    server_url=self.controller.control_server_url)
+                    server_url=urlparse(self.controller.control_server_url).hostname)
         else:
             self.set_status(403)
             #self.write_error(403)
