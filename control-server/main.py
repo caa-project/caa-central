@@ -8,13 +8,13 @@ import server
 
 
 gflags.DEFINE_integer("num_robots", 1, "number of robots", lower_bound=0)
-gflags.DEFINE_integer("port", 5000, "port number the server listen on")
+gflags.DEFINE_integer("port", 0, "port number the server listen on")
 
 
 def main(argv):
     argv = gflags.FLAGS(argv)
 
-    if gflags.FLAGS.port == 0:
+    if gflags.FLAGS.port == 0: # default value
         port = int(os.environ.get("PORT", 5000))
     else:
         port = gflags.FLAGS.port
