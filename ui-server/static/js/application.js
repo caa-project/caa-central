@@ -113,7 +113,7 @@ $(function() {
   });
 
   $("#send_btn").click(function() {
-    send_data("message", $("#send_input").val());
+    send_data("say", $("#send_input").val());
   });
 
 });
