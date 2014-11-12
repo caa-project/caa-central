@@ -47,64 +47,44 @@ function send_data(type, value) {
     }));
 };
 
-function send_wheel_data(value) {
-  send_data("wheel", value);
+function wheel(value) {
+  return function() {
+    send_data("wheel", value);
+  };
 }
 
 function stop() {
-  send_wheel_data("stop");
+  send_data("wheel", "stop");
 }
+
+function say($element) {
+  return function() {
+    send_data("say", $element.val());
+  };
+}
+
+function dummy() {}
 
 $(function() {
 
   //TODO 他のボタンもclickの動作をここに書く
   // ボタンの動作
   // 押している間だけ動くようにする（ボタンを離したらstopする）
-  $("#btn_stop").click(function(){
-    stop();
-  });
+  setEvent($("#btn_stop"), stop, dummy, dummy);
   // 左
-  $("#btn_left").mousedown(function() {
-    send_wheel_data("left");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_left"), wheel("left"), dummy, stop);
   // 右
-  $("#btn_right").mousedown(function() {
-    send_wheel_data("right");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_right"), wheel("right"), dummy, stop);
   // 前
-  $("#btn_forward").mousedown(function() {
-    send_wheel_data("forward");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_forward"), wheel("forward"), dummy, stop);
   // 後
-  $("#btn_back").mousedown(function() {
-    send_wheel_data("back");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_back"), wheel("back"), dummy, stop);
   // 時計回り
-  $("#btn_cw").mousedown(function() {
-    send_wheel_data("cw");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_cw"), wheel("cw"), dummy, stop);
   // 反時計回り
-  $("#btn_ccw").mousedown(function() {
-    send_wheel_data("ccw");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_ccw"), wheel("ccw"), dummy, stop);
   // ブレーキ
-  $("#btn_brake").mousedown(function() {
-    send_wheel_data("brake");
-  }).mouseup(function() {
-    stop();
-  });
+  setEvent($("#btn_brake"), wheel("brake"), dummy, stop);
 
   //スライドバーの動作
   $("#anglebar").change(function() {
@@ -112,8 +92,6 @@ $(function() {
     send_data("servo", val);
   });
 
-  $("#send_btn").click(function() {
-    send_data("say", $("#send_input").val());
-  });
+  setEvent($("#send_btn"), say($("#send_input")), dummy, dummy);
 
 });
