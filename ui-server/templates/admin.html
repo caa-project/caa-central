@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>CAA Admin</title>
+<link href="static/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="well">
+<form method="post" action="api/admin" class="form-horizontal">
+  <select name="request">
+    <option value="register">register</option>
+    <option value="delete">delete</option>
+  </select>
+  index <input type="text" name="index"/>
+  <button type="submit" class="btn btn-primary">submit</button>
+</form>
+</div>
+<h3 class="bg-{{ phase }}">{{ message }}</h3>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Index</th>
+            <th>Passphrase</th>
+            <th>Using</th>
+            <th>QR</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for index  in clients %}
+            {% set client = clients[index] %}
+            <tr>
+                {% set passphrase = client['passphrase'] %}
+                <td>{{ index }}</td>
+                <td>{{ passphrase }}</td>
+                <td>{{ client['using'] }}</td>
+                {% if passphrase is not None %}
+                    {% set url = '%s/ui/%s/%s' % (host, index, passphrase) %}
+                    <td><a href="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl={{ url }}">show</a></td>
+                {% else %}
+                    <td></td>
+                {% end %}
+            </tr>
+        {% end %}
+    </tbody>
+</table>
+<script src="static/js/jquery-2.1.1.min.js"></script>
+<script src="static/js/bootstrap.min.js"></script>
+</body>
+
+
