@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+# import json
 from ui_controller import UIController
-import json
 import os
 import signal
 from urlparse import urlparse
@@ -28,7 +28,7 @@ class AdminHandler(tornado.web.RequestHandler):
                 clients[index]['passphrase'] = None
         host = self.request.host
         self.render("admin.html", host='http://%s' % host, clients=clients,
-                phase=phase, message=message)
+                    phase=phase, message=message)
 
 
 class AdminAPIHandler(tornado.web.RequestHandler):
@@ -42,11 +42,11 @@ class AdminAPIHandler(tornado.web.RequestHandler):
         if request == "register":
             index = self.get_argument("index")
             response = self.controller.register(index)
-            #self.write(json.dumps(response))
+            # self.write(json.dumps(response))
         elif request == "delete":
             index = self.get_argument("index")
             response = self.controller.delete(index)
-            #self.write(json.dumps(response))
+            # self.write(json.dumps(response))
         else:
             self.set_status(400)
 
@@ -87,6 +87,28 @@ class DefaultHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 
+class URLHandler(tornado.web.RequestHandler):
+    """indexからURLをJSONで返す.
+
+    camera-serverで使われるよ．
+    { 
+        url: {string} uiへのURL.存在しない場合は空文字
+    }
+    """
+
+    def initialize(self, controller):
+        self.controller = controller
+
+    def get(self, index):
+        # TODO: origin check
+        url = ""
+        passphrase = self.controller.passphrase(index)   
+        if passphrase:
+            server_addr = "%s://%s" % (self.request.protocol, self.request.host)
+            url = server_addr + "ui/%s/%s" % (index, passphrase)
+        self.write(dict(url=url))
+
+
 def start_server(port=5001, control_server_url="http://localhost:5000"):
     controller = UIController(control_server_url)
 
@@ -99,7 +121,9 @@ def start_server(port=5001, control_server_url="http://localhost:5000"):
         (r"/", DefaultHandler),
         (r"/admin", AdminHandler, dict(controller=controller)),
         (r"/api/admin", AdminAPIHandler, dict(controller=controller)),
-        (r"/ui/([0-9a-zA-Z]+)/([0-9a-zA-Z]+)", UIHandler, dict(controller = controller)),
+        (r"/ui/([0-9a-zA-Z]+)/([0-9a-zA-Z]+)", UIHandler,
+         dict(controller=controller)),
+        (r"/url/([0-9a-zA-Z]+)", URLHandler, dict(controller=controller)),
     ]
     settings = dict(
         static_path=os.path.join(os.path.dirname(__file__), "static"),

@@ -18,7 +18,6 @@ def main(argv):
         port = int(os.environ.get("PORT", 5000))
     else:
         port = gflags.FLAGS.port
-    control_server_url = 'http://benijake-caa-control-server.herokuapp.com'
     ui_server.start_server(port=port,
             control_server_url=gflags.FLAGS.control_server_url)
 

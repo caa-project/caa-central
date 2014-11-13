@@ -113,3 +113,7 @@ class UIController():
         self.message = 'Error: %s' % e
         self.logger.exception(e)
 
+    def passphrase(self, index):
+        if index in self._pass_dict:
+            return self._pass_dict[index]
+        return None
