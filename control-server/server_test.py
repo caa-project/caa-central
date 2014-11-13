@@ -1,92 +1,56 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from server import Auth
-from server import DumpHandler
-from server import DeleteHandler
-from server import OperationHandler
-from server import RegisterHandler
-from server import RobotHandler
+from server import *
 from tornado.testing import AsyncHTTPTestCase
 import tornado.web
 import unittest
 import websocket
+import json
 
 
 class CAAControlServerTest(AsyncHTTPTestCase):
 
     def get_app(self):
         """@Override"""
-        self.url_base = "http://hoge.com/"
-
-        Auth.instance().set_num_max(3)
+        ClientContainer.instance().set_num_max(3)
 
         return tornado.web.Application([
-            (r"/register/([0-9]+)/([0-9a-zA-Z]+)", RegisterHandler),
-            (r"/dump", DumpHandler),
-            (r"/delete/([0-9]+)", DeleteHandler),
-            (r"/operation/([0-9]+)/([0-9a-zA-Z]+)", OperationHandler),
-            (r"/robo/([0-9]+)", RobotHandler),
+            (r"/robo/register", RobotRegisterHandler),
+            (r"/robo/delete", RobotDeleteHandler),
+            (r"/robo/([0-9]+)", RobotSocketHandler),
+            (r"/user/register", UserRegisterHandler),
+            (r"/user/delete", UserDeleteHandler),
+            (r"/user/([0-9]+)/([0-9a-zA-Z]+)", UserSocketHandler),
+            (r"/clients", ClientsHandler)
         ])
 
     def tearDown(self):
         """@Override"""
-        Auth.instance()._clear()
-        super(AsyncHTTPTestCase, self).tearDown()
+        ClientContainer._instance = ClientContainer()
 
-    def testAuth(self):
-        auth = Auth.instance()
+    def test_register(self):
+        response0 = json.loads(self.fetch(r"/robo/register?index=1024").body)
+        self.assertTrue(response0['succeeded'])
+        self.assertEqual(response0['index'], '1024')
 
-        self.assertEqual(3, auth.num_max())
+        response1 = json.loads(
+                self.fetch(r"/user/register?index=1024&passphrase=hogehoge").body)
+        self.assertTrue(response1['succeeded'])
 
-        auth.register("1", "abc123")
-        self.assertEqual("abc123", auth._pass_dict["1"])
+    def test_delete(self):
+        response0 = json.loads(self.fetch(r"/robo/register?index=1024").body)
+        self.assertTrue(response0['succeeded'])
+        self.assertEqual(response0['index'], '1024')
 
-        auth.register("300", "aaa111")
-        self.assertRaises(Exception,
-                          auth.register, ("300", "aaa11"))
-        auth.register("2", "bbb222")
-        self.assertRaises(Exception,
-                          auth.register, ("111", "aaa"))
-        auth.delete("300")
-        self.assertRaises(Exception,
-                          auth.delete, ("300"))
+        response1 = json.loads(
+                self.fetch(r"/user/register?index=1024&passphrase=hogehoge").body)
+        self.assertTrue(response1['succeeded'])
 
-        self.assertTrue(auth.auth("1", "abc123"))
-        self.assertFalse(auth.auth("1", "abc"))
+        response2 = json.loads(self.fetch(r"/user/delete?index=1024").body)
+        self.assertTrue(response2['succeeded'])
 
-    def testRegisterAndDelete(self):
-        # register
-        response = self.fetch(r"/register/1/abcd1234")
-        self.assertIn("Registered index '1'", response.body)
-
-        response = self.fetch(r"/register/3/efgh3456")
-        self.assertIn("Registered index '3'", response.body)
-
-        response = self.fetch(r"/register/100/efgh3456")
-        self.assertIn("Registered index '100'", response.body)
-
-        # delete
-        response = self.fetch(r"/delete/3")
-        self.assertIn("Deleted index '3'", response.body)
-
-        # TODO エラーのテスト
-        # - 数の上限を超えてregister
-        # - 重複したindexでのregister,
-        # - 存在しないindexでのdelete,
-
-    # TODO wsの接続ができない？？？
-    # def testRobotHandler(self):
-    #     """ Read here
-    #     http://www.giantflyingsaucer.com/blog/?p=4602
-    #     """
-    #     url = self.get_url("/robo/1").replace("http", "ws")
-    #     ws = websocket.create_connection(url)
-    #     RobotHandler.write_message_to("1", "hoge")
-    #     result = ws.recv()
-    #     self.assertEqual("hoge", result)
-    #     ws.close()
-
+        response3 = json.loads(self.fetch(r"/robo/delete?index=1024").body)
+        self.assertTrue(response3['succeeded'])
 
 if __name__ == '__main__':
     unittest.main()
