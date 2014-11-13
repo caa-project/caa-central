@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import urllib
 import urllib2
 import urlparse
 
@@ -28,25 +29,21 @@ class ControlProxy():
             url = urlparse.urljoin(url+"/", elem)
         return url
 
-    def _fetch_json(self, *path):
+    def _fetch_json(self, *path, **args):
         """Fetch Json response from Control Server.
         If response is error, raise Exception with error reason
         """
-        try:
-            url = self._get_url(*path)
-            response = urllib2.urlopen(url)
-            return json.loads(response.read())
-        except urllib2.URLError as e:
-            if hasattr(e, "reason"):
-                msg = e.reason
-            elif hasattr(e, "code"):
-                msg = "Error code %d" % e.code
-            raise Exception(msg)
-        except:
-            raise Exception("Unknown error")
+        url = self._get_url(*path)
+        if len(args) != 0:
+            url = '%s?%s' % (url, urllib.urlencode(args))
+        response = urllib2.urlopen(url)
+        return json.loads(response.read())
 
-    def delete(self, index):
-        return self._fetch_json("delete", index)
+    def delete(self, index, passphrase):
+        return self._fetch_json("user", "delete", index=index, passphrase=passphrase)
 
     def register(self, index, passphrase):
-        return self._fetch_json("register", index, passphrase)
+        return self._fetch_json("user", "register", index=index, passphrase=passphrase)
+
+    def get_clients(self):
+        return self._fetch_json("clients")
