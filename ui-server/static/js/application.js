@@ -1,115 +1,97 @@
-function endsWith(str, suffix) {
-    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+
+function append_message(tr_class, msg, time) {
+  $("#log_tbody").prepend("<tr class=\"" + tr_class + " \"><td>#</td><td>" + msg + "</td><td>" + time + "</td></tr>");
 }
 
-// TODO update address per request
-var URL = "ws://echo.websocket.org";
+var ws = null;
 
-function createWebSocket(url) {
-
-  var ws = new WebSocket(url);
-
-  ws.onopen = function () {
-    // Change information on header: green
-    $("#info_bar").text("connection to " + url + " is opened");
-    $("#headerbg").css("background", "#008000");
-  };
-
-  ws.onmessage = function(e) {
-    // Loggin messages
-    var msg = e.data;
-    var time = (new Date()).toLocaleString();
-    var tr_class = "";
-    if(endsWith(msg, "fail")){
-      tr_class = "danger";
+function open_websocket(server_url, index, passphrase) {
+  if (ws === null) {
+    ws = new WebSocket("ws://" + server_url + "/user/" + index + "/" + passphrase);
+    //接続開始時の処理
+    ws.onopen = function () {
+      //ヘッダーに緑地白文字でメッセージを出す
+      $("#info_bar").text("connection to " + server_url + " is opened");
+      $("#headerbg").css("background", "#008000");
     }
-    else if(endsWith(msg, "success")){
-      tr_class = "success";
+    //メッセージの受信
+    ws.onmessage = function(e) {
+      var data = JSON.parse(e.data);
+      var time = (new Date()).toLocaleString();
+      var tr_class = data["success"] ? "success" : "danger";
+      var msg = data["type"] + " : " + data["value"];
+      append_message(tr_class, msg, time);
+    };
+    //エラーの処理
+    ws.onerror = function(error) {
+      var log = (new Date()).toLocaleString() + "| " +  error;
+      $("#view").html(log + "\n" + $("#view").val());
+      ws = null;
+    };
+    //切断時の処理
+    ws.onclose = function(e) {
+      //ヘッダーに赤地白文字でメッセージを出す
+      $("#info_bar").text("connection to " + server_url + " is closed");
+      $("#headerbg").css("background", "#822222");
+      ws = null;
     }
-    $("#log_tbody").prepend("<tr class=\"" + tr_class + " \"><td>#</td><td>" + msg + "</td><td>" + time + "</td></tr>");
+  }
+  setTimeout(function() { open_websocket(server_url, index, passphrase); }, 1000);
+}
+
+function send_data(type, value) {
+  if (ws instanceof WebSocket)
+    ws.send(JSON.stringify({
+      type: type,
+      value: value
+    }));
+};
+
+function wheel(value) {
+  return function() {
+    send_data("wheel", value);
   };
+}
 
-  ws.onerror = function(error) {
-    var log = (new Date()).toLocaleString() + "| " +  error;
-    $("#view").html(log + "\n" + $("#view").val());
+function stop() {
+  send_data("wheel", "stop");
+}
+
+function say($element) {
+  return function() {
+    send_data("say", $element.val());
   };
-
-  ws.onclose = function(e) {
-    // Change information on header: red
-    $("#info_bar").text("connection to " + url + " is closed");
-    $("#headerbg").css("background", "#822222");  
-  };
-
-  return ws;
 }
 
-function prepareButtons(ws) {
-  $("#btn_stop").click(function(){
-    ws.send("stop");
-  });
-  // 左
-  $("#btn_left").mousedown(function() {
-    ws.send("left");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-  // 右
-  $("#btn_right").mousedown(function() {
-    ws.send("right");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-  // 前
-  $("#btn_forward").mousedown(function() {
-    ws.send("forward");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-  // 後
-  $("#btn_back").mousedown(function() {
-    ws.send("back");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-  // 時計回り
-  $("#btn_cw").mousedown(function() {
-    ws.send("cw");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-  // 反時計回り
-  $("#btn_ccw").mousedown(function() {
-    ws.send("ccw");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-  // ブレーキ
-  $("#btn_brake").mousedown(function() {
-    ws.send("brake");
-  }).mouseup(function() {
-    ws.send("stop");
-  });
-}
-
-function preparePush(ws) {
-  $("#btn_push").click(function() {
-    ws.send($("#send_input").val());
-  });
-}
-
-function prepareSlidebar(ws) {
-  $("#anglebar").change(function(){
-    var val = $("#anglebar").val();
-    var msg = "servo" + val; 
-    ws.send(msg);
-  });
-}
-
+function dummy() {}
 
 $(function() {
-  var ws = createWebSocket(URL);
 
-  prepareButtons(ws);
-  preparePush(ws);
-  prepareSlidebar(ws);
+  //TODO 他のボタンもclickの動作をここに書く
+  // ボタンの動作
+  // 押している間だけ動くようにする（ボタンを離したらstopする）
+  setEvent($("#btn_stop"), stop, dummy, dummy);
+  // 左
+  setEvent($("#btn_left"), wheel("left"), dummy, stop);
+  // 右
+  setEvent($("#btn_right"), wheel("right"), dummy, stop);
+  // 前
+  setEvent($("#btn_forward"), wheel("forward"), dummy, stop);
+  // 後
+  setEvent($("#btn_back"), wheel("back"), dummy, stop);
+  // 時計回り
+  setEvent($("#btn_cw"), wheel("cw"), dummy, stop);
+  // 反時計回り
+  setEvent($("#btn_ccw"), wheel("ccw"), dummy, stop);
+  // ブレーキ
+  setEvent($("#btn_brake"), wheel("brake"), dummy, stop);
+
+  //スライドバーの動作
+  $("#anglebar").change(function() {
+    var val = $("#anglebar").val();
+    send_data("servo", val);
+  });
+
+  setEvent($("#send_btn"), say($("#send_input")), dummy, dummy);
+
 });

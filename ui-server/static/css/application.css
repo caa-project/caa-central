@@ -12,3 +12,7 @@
   margin-right: auto;
   margin-left: auto;
 }
+#anglebar {
+    width: auto;
+    display: inline;
+}

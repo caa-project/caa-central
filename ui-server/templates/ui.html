@@ -1,16 +1,21 @@
 <html>
 <head>
-<title>CAA Controler</title>
-<link href={{ static_url("css/bootstrap.min.css") }} rel="stylesheet" media="screen">
-<link href={{ static_url("css/application.css") }} rel="stylesheet" media="screen">
+<title>CAA Controler {{ index }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../../static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="../../static/css/application.css" rel="stylesheet" media="screen">
+<script type="text/javascript" src="../../static/js/jquery-2.1.1.min.js"></script>
+<script type+"text/javascript" src="../../static/js/touch.js"></script>
+<script type="text/javascript" src="../../static/js/application.js"></script>
+<script type="text/javascript">
+$(function(){
+    open_websocket("{{ server_url }}", "{{ index }}", "{{ passphrase }}");
+});
+</script>
 </head>
 <body>
 <div id="headerbg">
   <div id="header">
-    <font color=#FFFFFF>[</font>
-    <font id="info_num" color=#FFFFFF>0</font>
-    <font color=#FFFFFF>]</font>
     <font id="info_bar" color=#FFFFFF></font>
   </div>
 </div>
@@ -32,7 +37,7 @@
 <p></p>
 <div>
   <input name="send_input" id="send_input" />
-  <input id="btn_push" type="button" value="push" class="btn btn-primary" />
+  <input type="button" value="push" class="btn btn-primary" id="send_btn" />
 </div>
 <div  class="container">
   <h3>Message Log</h3>
@@ -47,7 +52,5 @@
     <tbody id="log_tbody"></tbody>
   </table>
 </div>
-<script type="text/javascript" src={{ static_url("js/jquery-2.1.1.min.js") }}></script>
-<script type="text/javascript" src={{ static_url("js/application.js") }}></script>
 </body>
 </html>
