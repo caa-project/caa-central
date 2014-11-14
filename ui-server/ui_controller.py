@@ -35,7 +35,7 @@ class UIController():
         passphrase = self.pass_generator.generate()
         try:
             response = self.proxy.register(index, passphrase)
-            if 'succeeded' in response and response['succeeded']:
+            if 'success' in response and response['success']:
                 self._pass_dict[index] = passphrase
                 self.success("Registered %s : %s" % (index, passphrase))
                 return True

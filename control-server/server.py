@@ -13,8 +13,8 @@ logger = logging.getLogger("caa.control.api")
 def exception(handler, error):
     logger.exception(error)
     handler.write(json.dumps({
-        'succeeded': False,
-        'message': str(error)
+        'success': False,
+        'reason': str(error)
     }))
 
 def exception_on_socket(handler, no, error):
@@ -29,7 +29,7 @@ class RobotRegisterHandler(tornado.web.RequestHandler):
         try:
             container.add(index)
             self.write(json.dumps({
-                'succeeded': True,
+                'success': True,
                 'index': index
             }))
         except Exception as e:
@@ -43,9 +43,9 @@ class RobotDeleteHandler(tornado.web.RequestHandler):
         index = self.get_argument('index')
         container = ClientContainer.instance()
         if container.delete_robot(index):
-            self.write(json.dumps({'succeeded': True}))
+            self.write(json.dumps({'success': True}))
         else:
-            self.write(json.dumps({'succeeded': False}))
+            self.write(json.dumps({'success': False}))
         self.finish()
 
 
@@ -88,7 +88,7 @@ class UserRegisterHandler(tornado.web.RequestHandler):
         try:
             container.register_passphrase(index, passphrase)
             self.write(json.dumps({
-                'succeeded': True
+                'success': True
             }))
         except Exception as e:
             exception(self, e)
@@ -101,9 +101,9 @@ class UserDeleteHandler(tornado.web.RequestHandler):
         index = self.get_argument('index')
         container = ClientContainer.instance()
         if container.delete_user(index):
-            self.write(json.dumps({'succeeded': True}))
+            self.write(json.dumps({'success': True}))
         else:
-            self.write(json.dumps({'succeeded': False}))
+            self.write(json.dumps({'success': False}))
         self.finish()
 
 
