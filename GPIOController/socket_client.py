@@ -7,23 +7,20 @@
 
 """
 
-import sys
-import GPIOControler
 from GPIOControler.safety import SafetyThread
 from GPIOControler.wheel import WheelControler
-from GPIOControler.servo import ServoBlaster
-import registry
+# from GPIOControler.servo import ServoBlaster
 import json
 import websocket
 from python_say.voice_synthesis import say
 
 # サーボの準備> 0 = p1pin12 = GPIO18
-GPIOControler.servo.initialize([12], 150)
+# GPIOControler.servo.initialize([12], 150)
 
 # 車輪の制御
 wh = WheelControler([7, 11, 13, 15])
 # サーボの制御
-sv = ServoBlaster(0, 0.075)
+# sv = ServoBlaster(0, 0.075)
 # 安全装置
 th = SafetyThread(10)
 
@@ -39,10 +36,10 @@ def handle_data(data):
         - back
         (以下略)
     """
-    if data["type"] == "servo":
-        print "@servo", data["value"]
-        sv.move(data["value"])
-        return True
+    # if data["type"] == "servo":
+    #     print "@servo", data["value"]
+    #     sv.move(data["value"])
+    #     return True
     if data["type"] == "wheel":
         print "@wheel", data["value"]
         wh.execute(data["value"])
@@ -61,7 +58,7 @@ def on_message(ws, msg):
     """
     data = json.loads(msg)
     data['success'] = handle_data(data)
-    ws.send(json.dumps(data));
+    ws.send(json.dumps(data))
 
 
 def on_error(ws, error):
@@ -93,9 +90,8 @@ def get_websocket(server_address, index):
     websocket.enableTrace(True)
 
     ws = websocket.WebSocketApp('ws://%s/robo/%s' % (server_address, index),
-            on_message=on_message,
-            on_error=on_error,
-            on_close=on_close)
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
     ws.on_open = on_open
     return ws
-
