@@ -1,0 +1,3 @@
+[submodule "GPIOController/python_say"]
+	path = GPIOController/python_say
+	url = https://github.com/benijake/python_say
