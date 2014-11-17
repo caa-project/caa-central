@@ -33,9 +33,17 @@
         </tr>
     </thead>
     <tbody>
-        {% for index  in clients %}
+        {% for index in clients %}
             {% set client = clients[index] %}
-            <tr>
+            {% if client['robot_ws'] %}
+              {% if client['using'] %}
+              <tr class="success">
+              {% else %}
+              <tr>
+              {% end %}
+            {% else %}
+            <tr class="danger">
+            {% end %}
                 {% set passphrase = client['passphrase'] %}
                 <td>{{ index }}</td>
                 <td>{{ passphrase }}</td>
