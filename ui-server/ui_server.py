@@ -42,18 +42,20 @@ class AdminAPIHandler(tornado.web.RequestHandler):
 
     def initialize(self, controller):
         self.controller = controller
+        self.handlers = dict()
+        self.handlers["user"] = dict(
+            register=self.controller.register,
+            delete=self.controller.delete)
+        self.handlers["robo"] = dict(
+            register=self.controller.robo_register,
+            delete=self.controller.robo_delete)
 
     def post(self):
+        target = self.get_argument("target")
         request = self.get_argument("request")
-
-        if request == "register":
+        if target in self.handlers and request in self.handlers[target]:
             index = self.get_argument("index")
-            response = self.controller.register(index)
-            # self.write(json.dumps(response))
-        elif request == "delete":
-            index = self.get_argument("index")
-            response = self.controller.delete(index)
-            # self.write(json.dumps(response))
+            response = self.handlers[target][request](index)
         else:
             self.set_status(400)
 

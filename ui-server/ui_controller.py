@@ -67,6 +67,32 @@ class UIController():
             self.danger("Unknown error")
         return False
 
+    def robo_register(self, index):
+        try:
+            response = self.proxy.robo_register(index)
+            if 'success' in response and response['success']:
+                return True
+            else:
+                self.danger(response['message'])
+        except Exception as e:
+            self.error(e)
+        except:
+            self.danger("Unknown error")
+        return False
+                
+    def robo_delete(self, index):
+        try:
+            response = self.proxy.robo_delete(index)
+            if 'success' in response and response['success']:
+                return True
+            else:
+                self.danger(response['message'])
+        except Exception as e:
+            self.error(e)
+        except:
+            self.danger("Unknown error")
+        return False
+
     def get_clients(self):
         try:
             return self.proxy.get_clients()
