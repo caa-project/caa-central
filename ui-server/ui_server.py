@@ -74,9 +74,10 @@ class UIHandler(tornado.web.RequestHandler):
 
     def get(self, index, passphrase):
         if self.controller.auth(index, passphrase):
+            o = urlparse(self.controller.control_server_url)
+            server_url = o.hostname + ":" + str(o.port) if o.port else ""
             self.render("ui.html", index=index, passphrase=passphrase,
-                        server_url=urlparse(
-                            self.controller.control_server_url).hostname)
+                        server_url=server_url)
         else:
             self.set_status(403)
 
