@@ -24,31 +24,6 @@
 </form>
 </div>
 <h3 class="bg-{{ phase }}">{{ message }}</h3>
-<input type="button" value="toggle 説明" class="btn btn-default" onclick="$(this).next().toggle();"/>
-<div id="explanation">
-  Status の色の説明
-  <table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>色</th>
-      <th>説明</th>
-    </th>
-    <tbody>
-      <tr>
-        <td>白</td>
-        <td>ユーザーに割り当てできる状態(未register)</td>
-      </tr>
-      <tr class="success">
-        <td>緑</td>
-        <td>ユーザーが操作出来る状態(register済)</td>
-      </tr>
-      <tr class="danger">
-        <td>赤</td>
-        <td>ロボットとの通信が切断されている状態(ヤバイ)</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
 <h2>Status</h2>
 <table class="table table-bordered table-hover">
     <thead>
@@ -85,6 +60,7 @@
         {% end %}
     </tbody>
 </table>
+
 <h1>Robot Control</h1>
 <form method="post" action="api/admin" class="form-horizontal">
   <input type="hidden" name="target" value="robo"/>
@@ -97,6 +73,36 @@
   <input type="text" name="index"/>
   <button type="submit" class="btn btn-primary">submit</button>
 </form>
+
+<div id="explanation">
+  <h2>説明書</h2>
+  <input type="button" value="toggle 説明" class="btn btn-default" onclick="$(this).next().toggle();"/>
+  <div>
+  Status の色の説明
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>色</th>
+      <th>説明</th>
+    </th>
+    <tbody>
+      <tr>
+        <td>白</td>
+        <td>ユーザーに割り当てできる状態(未register)</td>
+      </tr>
+      <tr class="success">
+        <td>緑</td>
+        <td>ユーザーが操作出来る状態(register済)</td>
+      </tr>
+      <tr class="danger">
+        <td>赤</td>
+        <td>ロボットとの通信が切断されている状態(ヤバイ)</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
 <script src="static/js/jquery-2.1.1.min.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
 </body>
