@@ -3,10 +3,10 @@
 import string
 import random
 import logging
-import tornado.web
 import control_proxy
 
 logging.basicConfig(format='%(asctime)-15s | %(message)s')
+
 
 class PassGenerator():
     """Generate passphrase"""
@@ -19,6 +19,7 @@ class PassGenerator():
         for i in range(length):
             passphrase += random.choice(self.charset)
         return passphrase
+
 
 class UIController():
 
@@ -54,7 +55,7 @@ class UIController():
         try:
             passphrase = self._pass_dict[index]
             response = self.proxy.delete(index, passphrase)
-            if response['succeeded']:
+            if response['success']:
                 self._pass_dict.pop(index)
                 self.success("Deleted %s" % index)
                 return True
@@ -82,7 +83,8 @@ class UIController():
         self._pass_dict.clear()
 
     def auth(self, index, passphrase):
-        return index in self._pass_dict and self._pass_dict[index] == passphrase
+        return (index in self._pass_dict
+                and self._pass_dict[index] == passphrase)
 
     def reset_message(self):
         self.phase = 'info'
