@@ -2,6 +2,7 @@
 <head>
 <title>CAA Admin</title>
 <link href="static/css/bootstrap.min.css" rel="stylesheet">
+<link href="static/css/admin.css" rel="stylesheet">
 </head>
 <body>
 <div class="well">
@@ -23,6 +24,32 @@
 </form>
 </div>
 <h3 class="bg-{{ phase }}">{{ message }}</h3>
+<input type="button" value="toggle 説明" class="btn btn-default" onclick="$(this).next().toggle();"/>
+<div id="explanation">
+  Status の色の説明
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>色</th>
+      <th>説明</th>
+    </th>
+    <tbody>
+      <tr>
+        <td>白</td>
+        <td>ユーザーに割り当てできる状態(未register)</td>
+      </tr>
+      <tr class="success">
+        <td>緑</td>
+        <td>ユーザーが操作出来る状態(register済)</td>
+      </tr>
+      <tr class="danger">
+        <td>赤</td>
+        <td>ロボットとの通信が切断されている状態(ヤバイ)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<h2>Status</h2>
 <table class="table table-bordered table-hover">
     <thead>
         <tr>
