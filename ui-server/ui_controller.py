@@ -41,7 +41,7 @@ class UIController():
                 self.success("Registered %s : %s" % (index, passphrase))
                 return True
             else:
-                self.danger(response['message'])
+                self.danger(response['reason'])
         except Exception as e:
             self.error(e)
         except:
@@ -60,7 +60,7 @@ class UIController():
                 self.success("Deleted %s" % index)
                 return True
             else:
-                self.danger(response['message'])
+                self.danger(response['reason'])
         except Exception as e:
             self.error(e)
         except:
@@ -73,20 +73,20 @@ class UIController():
             if 'success' in response and response['success']:
                 return True
             else:
-                self.danger(response['message'])
+                self.danger(response['reason'])
         except Exception as e:
             self.error(e)
         except:
             self.danger("Unknown error")
         return False
-                
+
     def robo_delete(self, index):
         try:
             response = self.proxy.robo_delete(index)
             if 'success' in response and response['success']:
                 return True
             else:
-                self.danger(response['message'])
+                self.danger(response['reason'])
         except Exception as e:
             self.error(e)
         except:
