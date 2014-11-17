@@ -12,7 +12,6 @@ import GPIOControler
 from GPIOControler.safety import SafetyThread
 from GPIOControler.wheel import WheelControler
 from GPIOControler.servo import ServoBlaster
-import registry
 import json
 import websocket
 from python_say.voice_synthesis import say
