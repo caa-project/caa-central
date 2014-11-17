@@ -5,12 +5,20 @@
 </head>
 <body>
 <div class="well">
+<h1>User control</h1>
 <form method="post" action="api/admin" class="form-horizontal">
+  <input type="hidden" name="target" value="user"/>
+  Type
   <select name="request">
     <option value="register">register</option>
     <option value="delete">delete</option>
   </select>
-  index <input type="text" name="index"/>
+  Index
+  <select name="index">
+    {% for index  in clients %}
+      <option value="{{ index }}">{{ index }}</option>
+    {% end %}
+  </select>
   <button type="submit" class="btn btn-primary">submit</button>
 </form>
 </div>
@@ -42,6 +50,18 @@
         {% end %}
     </tbody>
 </table>
+<h1>Robot Control</h1>
+<form method="post" action="api/admin" class="form-horizontal">
+  <input type="hidden" name="target" value="robo"/>
+  Type
+  <select name="request">
+    <option value="register">register</option>
+    <option value="delete">delete</option>
+  </select>
+  Index
+  <input type="text" name="index"/>
+  <button type="submit" class="btn btn-primary">submit</button>
+</form>
 <script src="static/js/jquery-2.1.1.min.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
 </body>
