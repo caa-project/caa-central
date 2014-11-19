@@ -57,7 +57,10 @@ def on_message(ws, msg):
     受け取った命令に従って動作をする．動作が成功したかどうかを返事する．
     """
     data = json.loads(msg)
-    data['success'] = handle_data(data)
+    result = handle_data(data)
+    data['success'] = result
+    if result:
+        th.update()
     ws.send(json.dumps(data))
 
 
@@ -85,11 +88,8 @@ def init_safety():
     th.start()
 
 
-def get_websocket(server_address, index):
-
-    websocket.enableTrace(True)
-
-    ws = websocket.WebSocketApp('ws://%s/robo/%s' % (server_address, index),
+def get_websocket(server):
+    ws = websocket.WebSocketApp(server,
                                 on_message=on_message,
                                 on_error=on_error,
                                 on_close=on_close)
