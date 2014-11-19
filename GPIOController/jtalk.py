@@ -54,4 +54,6 @@ rm -f $TMP""".format(message)
 
 
 if __name__ == '__main__':
-    say("", "normal")
+    import sys
+    if len(sys.argv) > 1:
+        say(''.join(sys.argv[1:]), "normal")
