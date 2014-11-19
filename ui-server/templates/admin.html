@@ -2,19 +2,29 @@
 <head>
 <title>CAA Admin</title>
 <link href="static/css/bootstrap.min.css" rel="stylesheet">
+<link href="static/css/admin.css" rel="stylesheet">
 </head>
 <body>
 <div class="well">
+<h1>User control</h1>
 <form method="post" action="api/admin" class="form-horizontal">
+  <input type="hidden" name="target" value="user"/>
+  Action
   <select name="request">
     <option value="register">register</option>
     <option value="delete">delete</option>
   </select>
-  index <input type="text" name="index"/>
+  Index
+  <select name="index">
+    {% for index  in clients %}
+      <option value="{{ index }}">{{ index }}</option>
+    {% end %}
+  </select>
   <button type="submit" class="btn btn-primary">submit</button>
 </form>
 </div>
 <h3 class="bg-{{ phase }}">{{ message }}</h3>
+<h2>Status</h2>
 <table class="table table-bordered table-hover">
     <thead>
         <tr>
@@ -25,9 +35,17 @@
         </tr>
     </thead>
     <tbody>
-        {% for index  in clients %}
+        {% for index in clients %}
             {% set client = clients[index] %}
-            <tr>
+            {% if client['robot_ws'] %}
+              {% if client['using'] %}
+              <tr class="success">
+              {% else %}
+              <tr>
+              {% end %}
+            {% else %}
+            <tr class="danger">
+            {% end %}
                 {% set passphrase = client['passphrase'] %}
                 <td>{{ index }}</td>
                 <td>{{ passphrase }}</td>
@@ -42,6 +60,49 @@
         {% end %}
     </tbody>
 </table>
+
+<h1>Robot Control</h1>
+<form method="post" action="api/admin" class="form-horizontal">
+  <input type="hidden" name="target" value="robo"/>
+  Action
+  <select name="request">
+    <option value="register">register</option>
+    <option value="delete">delete</option>
+  </select>
+  Index
+  <input type="text" name="index"/>
+  <button type="submit" class="btn btn-primary">submit</button>
+</form>
+
+<div id="explanation">
+  <h2>説明書</h2>
+  <input type="button" value="toggle 説明" class="btn btn-default" onclick="$(this).next().toggle();"/>
+  <div>
+  Status の色の説明
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>色</th>
+      <th>説明</th>
+    </th>
+    <tbody>
+      <tr>
+        <td>白</td>
+        <td>ユーザーに割り当てできる状態(未register)</td>
+      </tr>
+      <tr class="success">
+        <td>緑</td>
+        <td>ユーザーが操作出来る状態(register済)</td>
+      </tr>
+      <tr class="danger">
+        <td>赤</td>
+        <td>ロボットとの通信が切断されている状態(ヤバイ)</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
 <script src="static/js/jquery-2.1.1.min.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
 </body>

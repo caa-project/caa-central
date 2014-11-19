@@ -3,7 +3,6 @@
 
 import sys
 import RPi.GPIO as GPIO
-import registry
 import socket_client
 import time
 
@@ -15,8 +14,6 @@ if __name__ == '__main__':
     server_address = sys.argv[1]
     index = sys.argv[2]
 
-
-    registry.register(server_address, index)
     socket_client.init_safety()
 
     while True:
@@ -28,5 +25,3 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             GPIO.cleanup()
             break
-
-    registry.delete(server_address, index)

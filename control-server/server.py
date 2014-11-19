@@ -10,6 +10,7 @@ import logging
 
 logger = logging.getLogger("caa.control.api")
 
+
 def exception(handler, error):
     logger.exception(error)
     handler.write(json.dumps({
@@ -17,9 +18,11 @@ def exception(handler, error):
         'reason': str(error)
     }))
 
+
 def exception_on_socket(handler, no, error):
     logger.exception(error)
     handler.close(no, str(error))
+
 
 class RobotRegisterHandler(tornado.web.RequestHandler):
 
@@ -45,7 +48,8 @@ class RobotDeleteHandler(tornado.web.RequestHandler):
         if container.delete_robot(index):
             self.write(json.dumps({'success': True}))
         else:
-            self.write(json.dumps({'success': False}))
+            self.write(json.dumps(
+                {'success': False, 'reason': 'cannot delete'}))
         self.finish()
 
 
@@ -103,7 +107,8 @@ class UserDeleteHandler(tornado.web.RequestHandler):
         if container.delete_user(index):
             self.write(json.dumps({'success': True}))
         else:
-            self.write(json.dumps({'success': False}))
+            self.write(json.dumps(
+                {'success': False, 'reason': 'cannot delete'}))
         self.finish()
 
 
