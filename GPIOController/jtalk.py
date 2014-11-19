@@ -4,11 +4,11 @@ import subprocess
 import threading
 
 
-emotions = ['normal', 'angry', 'bashful', 'happy', 'sad']
+EMOTIONS = ['normal', 'angry', 'bashful', 'happy', 'sad']
 
-def say(message, emotion=emotions[0]):
-    if emotion not in emotions:
-        emotion = emotions[0] # 'normal'
+def say(message, emotion=EMOTIONS[0]):
+    if emotion not in EMOTIONS:
+        emotion = EMOTIONS[0] # 'normal'
 
     env = {"TMP": "/tmp/jsay.wav"}
     commands = """echo '{0:s}' | open_jtalk \
@@ -49,10 +49,7 @@ rm -f $TMP""".format(message)
             cwd='/usr/share/hts-voice/mei_{0:s}'.format(emotion),
             env=env, shell=True)
 
-    def run():
-        proc.wait()
-
-    thread = threading.Thread(target=run)
+    thread = threading.Thread(target=proc.wait)
     thread.start()
 
 
