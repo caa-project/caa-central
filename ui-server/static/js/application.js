@@ -121,10 +121,10 @@ $(function() {
   setRepeatedAction($("#btn_brake"), wheel("brake"), stop, INTERVAL);
 
   // スライドバーの動作
-  $("#anglebar").change(function() {
-    var val = $("#anglebar").val();
-    send_data("servo", val);
-  });
+  // $("#anglebar").change(function() {
+  //   var val = $("#anglebar").val();
+  //   send_data("servo", val);
+  // });
 
   // 送信ボタン
   $("#send_btn").click(say($("#send_input")));
