@@ -85,11 +85,8 @@ def init_safety():
     th.start()
 
 
-def get_websocket(server_address, index):
-
-    websocket.enableTrace(True)
-
-    ws = websocket.WebSocketApp('ws://%s/robo/%s' % (server_address, index),
+def get_websocket(server):
+    ws = websocket.WebSocketApp(server,
                                 on_message=on_message,
                                 on_error=on_error,
                                 on_close=on_close)
