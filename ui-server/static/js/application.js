@@ -40,11 +40,14 @@ function open_websocket(server_url, index, passphrase) {
 }
 
 function send_data(type, value) {
-  if (ws instanceof WebSocket)
-    ws.send(JSON.stringify({
-      type: type,
-      value: value
-    }));
+  json = JSON.stringify({
+    type: type,
+    value: value
+  });
+  console.log(json);
+  if (ws instanceof WebSocket) {
+    ws.send(json);
+  }
 };
 
 function wheel(value) {
@@ -65,33 +68,64 @@ function say($element) {
 
 function dummy() {}
 
+
+/**
+ * Set an action to a button. The action is repeated.
+ *
+ * @param elem {jquery} jQuery object
+ * @param action {function} executed repeatedly, started at mousedown
+ * @param end_action {function} executed at mouseup event
+ * @param interval {int} interval (msec)
+ */
+function setRepeatedAction(elem, action, end_action, interval) {
+  var timer = {
+    start: function() {
+      action();
+      this.timer = setInterval(action, interval); 
+    },
+    finish: function() {
+      end_action();
+      clearInterval(this.timer);
+    },
+  };
+  elem.mousedown(function() {
+    timer.start();
+  });
+  elem.mouseup(function() {
+    timer.finish();
+  });
+}
+
+
 $(function() {
+  var INTERVAL = 5000;   // Less than safety thread interval.
 
-  //TODO 他のボタンもclickの動作をここに書く
-  // ボタンの動作
+  // 操作ボタン
   // 押している間だけ動くようにする（ボタンを離したらstopする）
-  setEvent($("#btn_stop"), stop, dummy, dummy);
-  // 左
-  setEvent($("#btn_left"), wheel("left"), dummy, stop);
-  // 右
-  setEvent($("#btn_right"), wheel("right"), dummy, stop);
-  // 前
-  setEvent($("#btn_forward"), wheel("forward"), dummy, stop);
-  // 後
-  setEvent($("#btn_back"), wheel("back"), dummy, stop);
-  // 時計回り
-  setEvent($("#btn_cw"), wheel("cw"), dummy, stop);
-  // 反時計回り
-  setEvent($("#btn_ccw"), wheel("ccw"), dummy, stop);
-  // ブレーキ
-  setEvent($("#btn_brake"), wheel("brake"), dummy, stop);
+  
+  $('#btn_stop').click(stop);
 
-  //スライドバーの動作
+  // 左
+  setRepeatedAction($("#btn_left"), wheel("left"), stop, INTERVAL);
+  // 右
+  setRepeatedAction($("#btn_right"), wheel("right"), stop, INTERVAL);
+  // 前
+  setRepeatedAction($("#btn_forward"), wheel("forward"), stop, INTERVAL);
+  // 後
+  setRepeatedAction($("#btn_back"), wheel("back"), stop, INTERVAL);
+  // 時計回り
+  setRepeatedAction($("#btn_cw"), wheel("cw"), stop, INTERVAL);
+  // 反時計回り
+  setRepeatedAction($("#btn_ccw"), wheel("ccw"), stop, INTERVAL);
+  // ブレーキ
+  setRepeatedAction($("#btn_brake"), wheel("brake"), stop, INTERVAL);
+
+  // スライドバーの動作
   $("#anglebar").change(function() {
     var val = $("#anglebar").val();
     send_data("servo", val);
   });
 
-  setEvent($("#send_btn"), say($("#send_input")), dummy, dummy);
-
+  // 送信ボタン
+  $("#send_btn").click(say($("#send_input")));
 });
