@@ -112,6 +112,11 @@ class URLHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin",
                         FLAGS.camera_server_url)
+        self.set_header("Access-Control-Allow-Credentials", "true")
+        self.set_header("Access-Control-Allow-Methods",
+                        "GET,PUT,POST,DELETE,OPTIONS")
+        self.set_header("Access-Control-Allow-Headers",
+                        "Content-Type, Authorization, Accept")
 
     def get(self, index):
         url = ""
