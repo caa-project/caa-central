@@ -12,9 +12,6 @@ import tornado.httpserver
 import tornado.web
 
 
-gflags.DEFINE_string("camera_server_url", "http://localhost:4999",
-                     "url to camera server")
-
 FLAGS = gflags.FLAGS
 
 
