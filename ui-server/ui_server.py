@@ -109,15 +109,6 @@ class URLHandler(tornado.web.RequestHandler):
     def initialize(self, controller):
         self.controller = controller
 
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin",
-                        FLAGS.camera_server_url)
-        self.set_header("Access-Control-Allow-Credentials", "true")
-        self.set_header("Access-Control-Allow-Methods",
-                        "GET,PUT,POST,DELETE,OPTIONS")
-        self.set_header("Access-Control-Allow-Headers",
-                        "Content-Type, Authorization, Accept")
-
     def get(self, index):
         url = ""
         passphrase = self.controller.passphrase(index)
@@ -125,7 +116,11 @@ class URLHandler(tornado.web.RequestHandler):
             server_addr = "%s://%s" % (
                 self.request.protocol, self.request.host)
             url = server_addr + "/ui/%s/%s" % (index, passphrase)
-        self.write(dict(url=url))
+        if url:
+            response = dict(url=url)
+        else:
+            response = dict(success=False, reason="not ready")
+        self.write(response)
 
 
 def start_server(port=5001, control_server_url="http://localhost:5000"):
