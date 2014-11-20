@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-# import json
 import gflags
 import os
+import sys
 import signal
 from urlparse import urlparse
 from ui_controller import UIController
@@ -42,18 +42,20 @@ class AdminAPIHandler(tornado.web.RequestHandler):
 
     def initialize(self, controller):
         self.controller = controller
+        self.handlers = dict()
+        self.handlers["user"] = dict(
+            register=self.controller.register,
+            delete=self.controller.delete)
+        self.handlers["robo"] = dict(
+            register=self.controller.robo_register,
+            delete=self.controller.robo_delete)
 
     def post(self):
+        target = self.get_argument("target")
         request = self.get_argument("request")
-
-        if request == "register":
+        if target in self.handlers and request in self.handlers[target]:
             index = self.get_argument("index")
-            response = self.controller.register(index)
-            # self.write(json.dumps(response))
-        elif request == "delete":
-            index = self.get_argument("index")
-            response = self.controller.delete(index)
-            # self.write(json.dumps(response))
+            self.handlers[target][request](index)
         else:
             self.set_status(400)
 
@@ -72,11 +74,12 @@ class UIHandler(tornado.web.RequestHandler):
 
     def get(self, index, passphrase):
         if self.controller.auth(index, passphrase):
+            o = urlparse(self.controller.control_server_url)
+            server_url = o.hostname + ":" + str(o.port) if o.port else ""
             self.render("ui.html", index=index, passphrase=passphrase,
-                    server_url=urlparse(self.controller.control_server_url).hostname)
+                        server_url=server_url)
         else:
             self.set_status(403)
-            #self.write_error(403)
 
     @classmethod
     def add_pass(cls, index, passphrase):
@@ -98,7 +101,7 @@ class URLHandler(tornado.web.RequestHandler):
     """indexからURLをJSONで返す.
 
     camera-serverで使われるよ．
-    { 
+    {
         url: {string} uiへのURL.存在しない場合は空文字
     }
     """
@@ -112,9 +115,10 @@ class URLHandler(tornado.web.RequestHandler):
 
     def get(self, index):
         url = ""
-        passphrase = self.controller.passphrase(index)   
+        passphrase = self.controller.passphrase(index)
         if passphrase:
-            server_addr = "%s://%s" % (self.request.protocol, self.request.host)
+            server_addr = "%s://%s" % (
+                self.request.protocol, self.request.host)
             url = server_addr + "/ui/%s/%s" % (index, passphrase)
         self.write(dict(url=url))
 

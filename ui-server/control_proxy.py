@@ -40,10 +40,18 @@ class ControlProxy():
         return json.loads(response.read())
 
     def delete(self, index, passphrase):
-        return self._fetch_json("user", "delete", index=index, passphrase=passphrase)
+        return self._fetch_json("user", "delete",
+                                index=index, passphrase=passphrase)
 
     def register(self, index, passphrase):
-        return self._fetch_json("user", "register", index=index, passphrase=passphrase)
+        return self._fetch_json("user", "register",
+                                index=index, passphrase=passphrase)
+
+    def robo_delete(self, index):
+        return self._fetch_json("robo", "delete", index=index)
+
+    def robo_register(self, index):
+        return self._fetch_json("robo", "register", index=index)
 
     def get_clients(self):
         return self._fetch_json("clients")
