@@ -89,12 +89,14 @@ function setRepeatedAction(elem, action, end_action, interval) {
   };
   elem.bind({
     'touchstart mousedown': function(e) {
+      console.log("down");
       timer.start();
     },
     'touchmove mousemove': function(e) {
       // do nothing
     },
     'touchend mouseup': function(e) {
+      console.log("up");
       timer.finish();
     }
   });
