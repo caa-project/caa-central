@@ -83,7 +83,11 @@ class UIController():
     def robo_delete(self, index):
         try:
             response = self.proxy.robo_delete(index)
+
+            # control serverでのindexの削除が成功すればこちらに保存している
+            # passphrase を削除する
             if 'success' in response and response['success']:
+                self.delete(index)
                 return True
             else:
                 self.danger(response['reason'])
