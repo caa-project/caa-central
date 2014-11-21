@@ -93,18 +93,21 @@ function setRepeatedAction(elem, action, end_action, interval) {
       }
     },
   };
-  elem.bind({
-    'touchstart mousedown': function(e) {
-      console.log("down");
+  if (window.TouchEvent) {
+    elem.get(0).addEventListener("touchstart", function(e) {
       timer.start();
-    },
-    'touchmove mousemove': function(e) {
-      // do nothing
-    },
-    'touchend mouseup': function(e) {
-      console.log("up");
+    });
+    elem.get(0).addEventListener("touchend", function(e) {
       timer.finish();
-    }
+    });
+  }
+  elem.mousedown(function() {
+    console.log("down");
+    timer.start();
+  });
+  elem.mouseup(function() {
+    console.log("up");
+    timer.finish();
   });
 }
 
