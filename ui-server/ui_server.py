@@ -12,9 +12,6 @@ import tornado.httpserver
 import tornado.web
 
 
-gflags.DEFINE_string("camera_server_url", "http://localhost:4999",
-                     "url to camera server")
-
 FLAGS = gflags.FLAGS
 
 
@@ -75,7 +72,8 @@ class UIHandler(tornado.web.RequestHandler):
     def get(self, index, passphrase):
         if self.controller.auth(index, passphrase):
             o = urlparse(self.controller.control_server_url)
-            server_url = o.hostname + ":" + str(o.port) if o.port else ""
+            port = str(o.port) if o.port else "80"
+            server_url = o.hostname + ":" + port
             self.render("ui.html", index=index, passphrase=passphrase,
                         server_url=server_url)
         else:
@@ -109,10 +107,6 @@ class URLHandler(tornado.web.RequestHandler):
     def initialize(self, controller):
         self.controller = controller
 
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin",
-                        FLAGS.camera_server_url)
-
     def get(self, index):
         url = ""
         passphrase = self.controller.passphrase(index)
@@ -120,7 +114,11 @@ class URLHandler(tornado.web.RequestHandler):
             server_addr = "%s://%s" % (
                 self.request.protocol, self.request.host)
             url = server_addr + "/ui/%s/%s" % (index, passphrase)
-        self.write(dict(url=url))
+        if url:
+            response = dict(url=url)
+        else:
+            response = dict(success=False, reason="not ready")
+        self.write(response)
 
 
 def start_server(port=5001, control_server_url="http://localhost:5000"):
