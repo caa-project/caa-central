@@ -79,18 +79,34 @@ function dummy() {}
 function setRepeatedAction(elem, action, end_action, interval) {
   var timer = {
     start: function() {
+      this.timer = null;
       action();
-      this.timer = setInterval(action, interval); 
+      if (this.timer == null) {
+        this.timer = setInterval(action, interval); 
+      }
     },
     finish: function() {
       end_action();
-      clearInterval(this.timer);
+      if (this.timer != null) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     },
   };
+  if (window.TouchEvent) {
+    elem.get(0).addEventListener("touchstart", function(e) {
+      timer.start();
+    });
+    elem.get(0).addEventListener("touchend", function(e) {
+      timer.finish();
+    });
+  }
   elem.mousedown(function() {
+    console.log("down");
     timer.start();
   });
   elem.mouseup(function() {
+    console.log("up");
     timer.finish();
   });
 }
