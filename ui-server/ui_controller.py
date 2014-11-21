@@ -49,6 +49,7 @@ class UIController():
         return False
 
     def delete(self, index):
+        """Delete passphrase assigned to an index."""
         if index not in self._pass_dict:
             self.danger('Do not have an access to %s' % index)
             return False
@@ -68,6 +69,7 @@ class UIController():
         return False
 
     def robo_register(self, index):
+        """Add index."""
         try:
             response = self.proxy.robo_register(index)
             if 'success' in response and response['success']:
@@ -81,13 +83,14 @@ class UIController():
         return False
 
     def robo_delete(self, index):
+        """Delete robot (index and passphrase)."""
         try:
             response = self.proxy.robo_delete(index)
 
             # control serverでのindexの削除が成功すればこちらに保存している
             # passphrase を削除する
             if 'success' in response and response['success']:
-                self.delete(index)
+                self._pass_dict.pop(index)
                 return True
             else:
                 self.danger(response['reason'])
