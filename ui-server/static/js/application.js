@@ -79,12 +79,18 @@ function dummy() {}
 function setRepeatedAction(elem, action, end_action, interval) {
   var timer = {
     start: function() {
+      this.timer = null;
       action();
-      this.timer = setInterval(action, interval); 
+      if (this.timer == null) {
+        this.timer = setInterval(action, interval); 
+      }
     },
     finish: function() {
       end_action();
-      clearInterval(this.timer);
+      if (this.timer != null) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     },
   };
   elem.bind({
