@@ -16,3 +16,17 @@
     width: auto;
     display: inline;
 }
+.imgbtn {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-color: transparent;
+}
+#btn_stop { background-image: url("../img/stop_lg.png"); }
+#btn_left { background-image: url("../img/upperleft_lg.png"); }
+#btn_forward { background-image: url("../img/up_lg.png"); }
+#btn_right { background-image: url("../img/upperright_lg.png"); }
+#btn_ccw { background-image: url("../img/turnleft_lg.png"); }
+#btn_cw { background-image: url("../img/turnright_lg.png"); }
+#btn_back { background-image: url("../img/down_lg.png"); }
+#btn_brake { background-image: url("../img/stop_lg.png"); }
