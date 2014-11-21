@@ -18,7 +18,7 @@ from jtalk import say
 # GPIOControler.servo.initialize([12], 150)
 
 # 車輪の制御
-wh = WheelControler([7, 11, 13, 15])
+wh = WheelControler([11, 13, 15, 16])
 # サーボの制御
 # sv = ServoBlaster(0, 0.075)
 # 安全装置
@@ -45,8 +45,9 @@ def handle_data(data):
         wh.execute(data["value"])
         return True
     if data["type"] == "say":
-        print "@say", data["value"]
-        say(data["value"])
+        msg = data["value"].encode("utf-8")
+        print "@say", msg
+        say(msg)
         return True
     return False
 
@@ -57,10 +58,16 @@ def on_message(ws, msg):
     受け取った命令に従って動作をする．動作が成功したかどうかを返事する．
     """
     data = json.loads(msg)
-    result = handle_data(data)
-    data['success'] = result
-    if result:
-        th.update()
+    try:
+        result = handle_data(data)
+        data['success'] = result
+        if result:
+            th.update()
+        else:
+            data["reason"] = "oh no!"
+    except Exception as e:
+        data["success"] = False
+        data["reason"] = str(e)
     ws.send(json.dumps(data))
 
 
