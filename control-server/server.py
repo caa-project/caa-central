@@ -146,6 +146,22 @@ class ClientsHandler(tornado.web.RequestHandler):
         self.write(json.dumps(container.get_clients()))
         self.finish()
 
+class SayHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        index = self.get_argument('index')
+        message = self.get_argument('q')
+        try:
+            ClientContainer.instance().send_to_robot(index,
+                    json.dumps({
+                        'type': 'say',
+                        'value': message
+                    }))
+            self.write(json.dumps({'success': True}))
+        except Exception as e:
+            exception(self, e)
+        self.finish()
+
 
 def start_server(port=5000, num_robots_max=1):
     ClientContainer.instance().set_num_max(num_robots_max)
@@ -156,7 +172,8 @@ def start_server(port=5000, num_robots_max=1):
         (r"/user/register", UserRegisterHandler),
         (r"/user/delete", UserDeleteHandler),
         (r"/user/([0-9]+)/([0-9a-zA-Z]+)", UserSocketHandler),
-        (r"/clients", ClientsHandler)
+        (r"/clients", ClientsHandler),
+        (r"/say", SayHandler)
     ])
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(port)
