@@ -44,6 +44,7 @@ function send_data(type, value) {
     type: type,
     value: value
   });
+  append_message('success',json,'');
   if (ws instanceof WebSocket) {
     ws.send(json);
   }
@@ -79,25 +80,41 @@ function dummy() {}
 function setRepeatedAction(elem, action, end_action, interval) {
   var timer = {
     start: function() {
+      this.timer = null;
       action();
-      this.timer = setInterval(action, interval); 
+      if (this.timer == null) {
+        this.timer = setInterval(action, interval); 
+      }
     },
     finish: function() {
       end_action();
-      clearInterval(this.timer);
+      if (this.timer != null) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     },
   };
-  elem.bind({
-    'touchstart mousedown': function(e) {
+  if (window.TouchEvent) {
+    elem.get(0).addEventListener("touchstart", function(e) {
+      append_message('info','touchstart','');
       timer.start();
-    },
-    'touchmove mousemove': function(e) {
-      // do nothing
-    },
-    'touchend mouseup': function(e) {
+    });
+    elem.get(0).addEventListener("touchend", function(e) {
+      append_message('info','touchend','');
       timer.finish();
-    }
-  });
+    });
+  } else {
+    elem.mousedown(function() {
+      console.log("down");
+      append_message('info','mousedown','');
+      timer.start();
+    });
+    elem.mouseup(function() {
+      console.log("up");
+      append_message('info','mouseup','');
+      timer.finish();
+    });
+  }
 }
 
 
