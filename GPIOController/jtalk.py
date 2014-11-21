@@ -6,12 +6,13 @@ import threading
 
 EMOTIONS = ['normal', 'angry', 'bashful', 'happy', 'sad']
 
+
 def say(message, emotion=EMOTIONS[0]):
     if emotion not in EMOTIONS:
-        emotion = EMOTIONS[0] # 'normal'
+        emotion = EMOTIONS[0]  # 'normal'
 
     env = {"TMP": "/tmp/jsay.wav"}
-    commands = """echo '{0:s}' | open_jtalk \
+    commands = """echo '%s' | open_jtalk \
 -td tree-dur.inf \
 -tf tree-lf0.inf \
 -tm tree-mgc.inf \
@@ -43,13 +44,17 @@ def say(message, emotion=EMOTIONS[0]):
 -x /var/lib/mecab/dic/open-jtalk/naist-jdic \
 -ow $TMP && \
 aplay --quiet $TMP
-rm -f $TMP""".format(message)
+rm -f $TMP""" % (message)
 
-    proc = subprocess.Popen(commands,
-            cwd='/usr/share/hts-voice/mei_{0:s}'.format(emotion),
-            env=env, shell=True)
+    proc = subprocess.Popen(
+        commands,
+        cwd='/usr/share/hts-voice/mei_{0:s}'.format(emotion),
+        env=env, shell=True)
 
-    thread = threading.Thread(target=proc.wait)
+    def target():
+        proc.wait()
+
+    thread = threading.Thread(target=target)
     thread.start()
 
 
