@@ -87,11 +87,16 @@ function setRepeatedAction(elem, action, end_action, interval) {
       clearInterval(this.timer);
     },
   };
-  elem.mousedown(function() {
-    timer.start();
-  });
-  elem.mouseup(function() {
-    timer.finish();
+  elem.bind({
+    'touchstart mousedown': function(e) {
+      timer.start();
+    },
+    'touchmove mousemove': function(e) {
+      // do nothing
+    },
+    'touchend mouseup': function(e) {
+      timer.finish();
+    }
   });
 }
 
