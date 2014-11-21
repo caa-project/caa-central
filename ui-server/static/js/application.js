@@ -44,6 +44,7 @@ function send_data(type, value) {
     type: type,
     value: value
   });
+  append_message('success',json,'');
   if (ws instanceof WebSocket) {
     ws.send(json);
   }
@@ -95,20 +96,25 @@ function setRepeatedAction(elem, action, end_action, interval) {
   };
   if (window.TouchEvent) {
     elem.get(0).addEventListener("touchstart", function(e) {
+      append_message('info','touchstart','');
       timer.start();
     });
     elem.get(0).addEventListener("touchend", function(e) {
+      append_message('info','touchend','');
+      timer.finish();
+    });
+  } else {
+    elem.mousedown(function() {
+      console.log("down");
+      append_message('info','mousedown','');
+      timer.start();
+    });
+    elem.mouseup(function() {
+      console.log("up");
+      append_message('info','mouseup','');
       timer.finish();
     });
   }
-  elem.mousedown(function() {
-    console.log("down");
-    timer.start();
-  });
-  elem.mouseup(function() {
-    console.log("up");
-    timer.finish();
-  });
 }
 
 
