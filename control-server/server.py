@@ -72,9 +72,10 @@ class RobotSocketHandler(tornado.websocket.WebSocketHandler):
         """@Override"""
         ClientContainer.instance().delete_robot_ws(self.index)
 
-    def on_message(self, response):
+    def on_message(self, message):
         """@Override"""
-        ClientContainer.instance().send_to_user(self.index, response)
+        logger.info(message)
+        ClientContainer.instance().send_to_user(self.index, message)
 
 
 class UserRegisterHandler(tornado.web.RequestHandler):
@@ -122,7 +123,7 @@ class UserSocketHandler(tornado.websocket.WebSocketHandler):
         """@Override"""
         container = ClientContainer.instance()
         if not container.auth(index, passphrase):
-            self.write("")
+            self.close()    # auth failed
             return
         self.index = index
         try:
@@ -134,9 +135,10 @@ class UserSocketHandler(tornado.websocket.WebSocketHandler):
         """@Override"""
         ClientContainer.instance().delete_user_ws(self.index)
 
-    def on_message(self, response):
+    def on_message(self, message):
         """@Override"""
-        ClientContainer.instance().send_to_robot(self.index, response)
+        logger.info(message)
+        ClientContainer.instance().send_to_robot(self.index, message)
 
 
 class ClientsHandler(tornado.web.RequestHandler):
