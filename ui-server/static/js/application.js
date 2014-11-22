@@ -47,6 +47,8 @@ function send_data(type, value) {
   append_message('success',json,'');
   if (ws instanceof WebSocket) {
     ws.send(json);
+  } else {
+    append_message('danger','ws is not instanceof WebSocket','');
   }
 };
 
@@ -89,7 +91,7 @@ function setRepeatedAction(elem, action, end_action, interval) {
       this.timer = null;
       action();
       if (this.timer == null) {
-        this.timer = setInterval(action, interval); 
+        this.timer = setInterval(action, interval);
       }
     },
     finish: function() {
@@ -101,11 +103,11 @@ function setRepeatedAction(elem, action, end_action, interval) {
     },
   };
   if (is_touch_device()) {
-    elem.get(0).addEventListener("touchstart", function(e) {
+    elem.bind('touchstart', function(e) {
       append_message('info','touchstart','');
       timer.start();
     });
-    elem.get(0).addEventListener("touchend", function(e) {
+    elem.bind('touchend', function(e) {
       append_message('info','touchend','');
       timer.finish();
     });
@@ -129,9 +131,9 @@ $(function() {
 
   // 操作ボタン
   // 押している間だけ動くようにする（ボタンを離したらstopする）
-  
-  $('#btn_stop').click(stop);
 
+  // ストップ
+  setRepeatedAction($("#btn_stop"), stop, stop, INTERVAL);
   // 左
   setRepeatedAction($("#btn_left"), wheel("left"), stop, INTERVAL);
   // 右

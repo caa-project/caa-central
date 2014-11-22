@@ -154,17 +154,18 @@ class ClientsHandler(tornado.web.RequestHandler):
         self.write(json.dumps(container.get_clients()))
         self.finish()
 
+
 class SayHandler(tornado.web.RequestHandler):
 
     def get(self):
         index = self.get_argument('index')
         message = self.get_argument('q')
         try:
-            ClientContainer.instance().send_to_robot(index,
-                    json.dumps({
-                        'type': 'say',
-                        'value': message
-                    }))
+            data = {
+                "type": "say",
+                "value": message.encode("utf-8")
+            }
+            ClientContainer.instance().send_to_robot(index, json.dumps(data))
             self.write(json.dumps({'success': True}))
         except Exception as e:
             exception(self, e)
