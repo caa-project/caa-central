@@ -118,12 +118,20 @@ class ClientContainer():
 
     @synchronized
     def send_to_robot(self, index, message):
-        if index in self._clients and self._clients[index].robot_ws is not None:
+        if index not in self._clients:
+            raise Exception('The index %s is not registered' % index)
+        elif self._clients[index].robot_ws is None:
+            raise Exception('The websocket for robot(%s) is None' % index)
+        else:
             self._clients[index].robot_ws.write_message(message)
 
     @synchronized
     def send_to_user(self, index, message):
-        if index in self._clients and self._clients[index].user_ws is not None:
+        if index not in self._clients:
+            raise Exception('The index %s is not registered' % index)
+        elif self._clients[index].user_ws is None:
+            raise Exception('The websocket for user(%s) is None' % index)
+        else:
             self._clients[index].user_ws.write_message(message)
 
     @synchronized

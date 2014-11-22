@@ -66,7 +66,13 @@ function say($element) {
   };
 }
 
-function dummy() {}
+function is_touch_device() {
+    is_ios = navigator.userAgent.indexOf('iPhone') > 0 ||
+        navigator.userAgent.indexOf('iPad') > 0 ||
+        navigator.userAgent.indexOf('iPod') > 0;
+    is_android = navigator.userAgent.indexOf('Android') > 0;
+    return is_ios || is_android;
+}
 
 
 /**
@@ -83,7 +89,7 @@ function setRepeatedAction(elem, action, end_action, interval) {
       this.timer = null;
       action();
       if (this.timer == null) {
-        this.timer = setInterval(action, interval); 
+        this.timer = setInterval(action, interval);
       }
     },
     finish: function() {
@@ -94,7 +100,7 @@ function setRepeatedAction(elem, action, end_action, interval) {
       }
     },
   };
-  if (window.TouchEvent) {
+  if (is_touch_device()) {
     elem.get(0).addEventListener("touchstart", function(e) {
       append_message('info','touchstart','');
       timer.start();
@@ -123,9 +129,9 @@ $(function() {
 
   // 操作ボタン
   // 押している間だけ動くようにする（ボタンを離したらstopする）
-  
-  $('#btn_stop').click(stop);
 
+  // ストップ
+  setRepeatedAction($("#btn_stop"), stop, stop, INTERVAL);
   // 左
   setRepeatedAction($("#btn_left"), wheel("left"), stop, INTERVAL);
   // 右
