@@ -154,6 +154,7 @@ class ClientsHandler(tornado.web.RequestHandler):
         self.write(json.dumps(container.get_clients()))
         self.finish()
 
+
 class SayHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -163,7 +164,7 @@ class SayHandler(tornado.web.RequestHandler):
             ClientContainer.instance().send_to_robot(index,
                     json.dumps({
                         'type': 'say',
-                        'value': message
+                        'value': message.decode('utf-8')
                     }))
             self.write(json.dumps({'success': True}))
         except Exception as e:
