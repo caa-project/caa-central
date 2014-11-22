@@ -36,6 +36,16 @@ $(function(){
   <!--<input type="button" class="btn cols-xs-4 imgbtn" id="btn_brake">-->
 </div>
 <p></p>
+<div>
+<h3>メッセージの送信</h3>
+<select id="fixedphrase">
+  {% for i, phrase in enumerate(phrases) %}
+    <option value="{{ i }}">{{ phrase }}</option>   
+  {% end %}
+</select>
+<input id="btn_fixedphrase" type="button" class="btn btn-primary" value="送信"></input>
+</div>
+
 <!-- <div align="center"> -->
 <!--   &#45;60<input type="range" id="anglebar" min="&#45;60" max="60" step="5" value="50"></input>60 -->
 <!-- </div> -->
