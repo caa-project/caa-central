@@ -75,7 +75,10 @@ class RobotSocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         """@Override"""
         logger.info(message)
-        ClientContainer.instance().send_to_user(self.index, message)
+        try:
+            ClientContainer.instance().send_to_user(self.index, message)
+        except Exception as e:
+            logger.exception(e)
 
 
 class UserRegisterHandler(tornado.web.RequestHandler):
@@ -138,7 +141,10 @@ class UserSocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         """@Override"""
         logger.info(message)
-        ClientContainer.instance().send_to_robot(self.index, message)
+        try:
+            ClientContainer.instance().send_to_robot(self.index, message)
+        except Exception as e:
+            logger.exception(e)
 
 
 class ClientsHandler(tornado.web.RequestHandler):
