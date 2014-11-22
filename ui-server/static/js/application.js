@@ -89,7 +89,7 @@ function setRepeatedAction(elem, action, end_action, interval) {
       this.timer = null;
       action();
       if (this.timer == null) {
-        this.timer = setInterval(action, interval); 
+        this.timer = setInterval(action, interval);
       }
     },
     finish: function() {
@@ -129,9 +129,9 @@ $(function() {
 
   // 操作ボタン
   // 押している間だけ動くようにする（ボタンを離したらstopする）
-  
-  $('#btn_stop').click(stop);
 
+  // ストップ
+  setRepeatedAction($("#btn_stop"), stop, stop, INTERVAL);
   // 左
   setRepeatedAction($("#btn_left"), wheel("left"), stop, INTERVAL);
   // 右
