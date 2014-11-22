@@ -49,10 +49,10 @@
                 {% set passphrase = client['passphrase'] %}
                 {% set url = '%s/ui/%s/%s' % (host, index, passphrase) %}
                 <td>{{ index }}</td>
-                <td><a href="{{ url }}">{{ passphrase }}</a></td>
+                <td><a href="{{ url }}" target="_blank">{{ passphrase }}</a></td>
                 <td>{{ client['using'] }}</td>
                 {% if passphrase is not None %}
-                    <td><a href="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl={{ url }}">show</a></td>
+                    <td><a href="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl={{ url }}" target="_blank">show</a></td>
                 {% else %}
                     <td></td>
                 {% end %}
