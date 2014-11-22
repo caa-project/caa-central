@@ -11,6 +11,7 @@ from GPIOControler.safety import SafetyThread
 from GPIOControler.wheel import WheelControler
 # from GPIOControler.servo import ServoBlaster
 import json
+import fixedphrase
 import websocket
 from jtalk import say
 
@@ -49,6 +50,9 @@ def handle_data(data):
         print "@say", msg
         say(msg)
         return True
+    if data["type"] == "fixedphrase":
+        idx = int(data["value"])
+        fixedphrase.say(idx)
     return False
 
 
