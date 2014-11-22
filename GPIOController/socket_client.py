@@ -51,8 +51,8 @@ def handle_data(data):
         say(msg)
         return True
     if data["type"] == "fixedphrase":
-        idx = int(data["value"])
-        fixedphrase.say(idx)
+        fixedphrase.say(int(data["value"]))
+        return True
     return False
 
 
