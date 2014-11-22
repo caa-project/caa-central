@@ -72,9 +72,13 @@ class RobotSocketHandler(tornado.websocket.WebSocketHandler):
         """@Override"""
         ClientContainer.instance().delete_robot_ws(self.index)
 
-    def on_message(self, response):
+    def on_message(self, message):
         """@Override"""
-        ClientContainer.instance().send_to_user(self.index, response)
+        logger.info(message)
+        try:
+            ClientContainer.instance().send_to_user(self.index, message)
+        except Exception as e:
+            logger.exception(e)
 
 
 class UserRegisterHandler(tornado.web.RequestHandler):
@@ -122,7 +126,7 @@ class UserSocketHandler(tornado.websocket.WebSocketHandler):
         """@Override"""
         container = ClientContainer.instance()
         if not container.auth(index, passphrase):
-            self.write("")
+            self.close()    # auth failed
             return
         self.index = index
         try:
@@ -134,9 +138,13 @@ class UserSocketHandler(tornado.websocket.WebSocketHandler):
         """@Override"""
         ClientContainer.instance().delete_user_ws(self.index)
 
-    def on_message(self, response):
+    def on_message(self, message):
         """@Override"""
-        ClientContainer.instance().send_to_robot(self.index, response)
+        logger.info(message)
+        try:
+            ClientContainer.instance().send_to_robot(self.index, message)
+        except Exception as e:
+            logger.exception(e)
 
 
 class ClientsHandler(tornado.web.RequestHandler):
@@ -144,6 +152,22 @@ class ClientsHandler(tornado.web.RequestHandler):
     def get(self):
         container = ClientContainer.instance()
         self.write(json.dumps(container.get_clients()))
+        self.finish()
+
+class SayHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        index = self.get_argument('index')
+        message = self.get_argument('q')
+        try:
+            ClientContainer.instance().send_to_robot(index,
+                    json.dumps({
+                        'type': 'say',
+                        'value': message
+                    }))
+            self.write(json.dumps({'success': True}))
+        except Exception as e:
+            exception(self, e)
         self.finish()
 
 
@@ -156,7 +180,8 @@ def start_server(port=5000, num_robots_max=1):
         (r"/user/register", UserRegisterHandler),
         (r"/user/delete", UserDeleteHandler),
         (r"/user/([0-9]+)/([0-9a-zA-Z]+)", UserSocketHandler),
-        (r"/clients", ClientsHandler)
+        (r"/clients", ClientsHandler),
+        (r"/say", SayHandler)
     ])
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(port)
