@@ -44,7 +44,6 @@ function send_data(type, value) {
     type: type,
     value: value
   });
-  console.log(json);
   append_message('success',json,'');
   if (ws instanceof WebSocket) {
     ws.send(json);
