@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Play sound listed in a file.
+
+Play comamnd is given in arguments.
+Example:
+for Linux
+  fixedphrase.py --phrase_list=phrases.txt --command="aplay --quiet"
+for Macintosh
+  fixedphrase.py --phrase_list=phrases.txt --command="afplay"
+"""
+
 
 import gflags
 import subprocess
@@ -12,11 +22,14 @@ gflags.DEFINE_string("command", "aplay --quiet", "command to play wav.")
 gflags.DEFINE_string("phrase_list", None, "list of path to wav files")
 
 
-files = list()
+files = list()  # path to wav files
 
 
 def initialize():
-    """Set file path."""
+    """Set file path.
+
+    Call me BEFORE using say.
+    """
     with open(FLAGS.phrase_list) as f:
         for line in f.read().split("\n"):
             if line:
@@ -24,7 +37,7 @@ def initialize():
 
 
 def say(idx_phrase):
-    """Play sound using aplay."""
+    """Play sound using FLAGS.commad."""
     path = files[idx_phrase]
     cmd = FLAGS.command + " " + path
     proc = subprocess.Popen(cmd, shell=True)
