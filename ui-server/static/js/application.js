@@ -44,6 +44,7 @@ function send_data(type, value) {
     type: type,
     value: value
   });
+  append_message('success',json,'');
   if (ws instanceof WebSocket) {
     ws.send(json);
   }
@@ -65,7 +66,13 @@ function say($element) {
   };
 }
 
-function dummy() {}
+function is_touch_device() {
+    is_ios = navigator.userAgent.indexOf('iPhone') > 0 ||
+        navigator.userAgent.indexOf('iPad') > 0 ||
+        navigator.userAgent.indexOf('iPod') > 0;
+    is_android = navigator.userAgent.indexOf('Android') > 0;
+    return is_ios || is_android;
+}
 
 
 /**
@@ -93,22 +100,27 @@ function setRepeatedAction(elem, action, end_action, interval) {
       }
     },
   };
-  if (window.TouchEvent) {
+  if (is_touch_device()) {
     elem.get(0).addEventListener("touchstart", function(e) {
+      append_message('info','touchstart','');
       timer.start();
     });
     elem.get(0).addEventListener("touchend", function(e) {
+      append_message('info','touchend','');
+      timer.finish();
+    });
+  } else {
+    elem.mousedown(function() {
+      console.log("down");
+      append_message('info','mousedown','');
+      timer.start();
+    });
+    elem.mouseup(function() {
+      console.log("up");
+      append_message('info','mouseup','');
       timer.finish();
     });
   }
-  elem.mousedown(function() {
-    console.log("down");
-    timer.start();
-  });
-  elem.mouseup(function() {
-    console.log("up");
-    timer.finish();
-  });
 }
 
 
