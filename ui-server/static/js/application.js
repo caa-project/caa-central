@@ -40,7 +40,7 @@ function open_websocket(server_url, index, passphrase) {
 }
 
 function send_data(type, value) {
-  json = JSON.stringify({
+  var json = JSON.stringify({
     type: type,
     value: value
   });
@@ -69,10 +69,10 @@ function say($element) {
 }
 
 function is_touch_device() {
-    is_ios = navigator.userAgent.indexOf('iPhone') > 0 ||
+    var is_ios = navigator.userAgent.indexOf('iPhone') > 0 ||
         navigator.userAgent.indexOf('iPad') > 0 ||
         navigator.userAgent.indexOf('iPod') > 0;
-    is_android = navigator.userAgent.indexOf('Android') > 0;
+    var is_android = navigator.userAgent.indexOf('Android') > 0;
     return is_ios || is_android;
 }
 
