@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+import fixedphrase
 import gflags
 import sys
 import RPi.GPIO as GPIO
@@ -16,6 +17,7 @@ def main(argv):
     argv = gflags.FLAGS(argv)
 
     socket_client.init_safety()
+    fixedphrase.initialize()
 
     while True:
         try:
