@@ -68,14 +68,17 @@ class ClientContainer():
     @synchronized
     def delete_robot_ws(self, index):
         if index in self._clients:
-            self._clients[index].robot_ws = None
+            if self._clients[index].robot_ws is not None:
+                self._clients[index].robot_ws.close()
+                self._clients[index].robot_ws = None
             return True
         return False
 
     @synchronized
     def delete_robot(self, index):
         if index in self._clients:
-            #self._clients[index].robot_ws = None
+            if self._clients[index].robot_ws is not None:
+                self._clients[index].robot_ws.close()
             self._clients.pop(index)
             return True
         return False
