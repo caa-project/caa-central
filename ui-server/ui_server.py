@@ -14,6 +14,19 @@ import tornado.web
 
 FLAGS = gflags.FLAGS
 
+# 定型文
+FIXED_PHRASES = [
+    "こんにちは",
+    "ありがとう",
+    "さようなら",
+    "ゆっくりしていってね！",
+    "ロボットが通りまーす",
+    "古墳に帰りたい",
+    "どきなさいよ！",
+    "こんにちは！私の名前は はにたそ！今あなたの前にいるの！",
+    "ひみこさまー！",
+    "遠隔操作しています"]
+
 
 # TODO 認証をつける (http://conta.hatenablog.com/entry/2012/05/31/222940)
 class AdminHandler(tornado.web.RequestHandler):
@@ -75,7 +88,7 @@ class UIHandler(tornado.web.RequestHandler):
             port = str(o.port) if o.port else "80"
             server_url = o.hostname + ":" + port
             self.render("ui.html", index=index, passphrase=passphrase,
-                        server_url=server_url)
+                        server_url=server_url, phrases=FIXED_PHRASES)
         else:
             self.set_status(403)
 

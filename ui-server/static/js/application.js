@@ -11,7 +11,7 @@ function open_websocket(server_url, index, passphrase) {
     //接続開始時の処理
     ws.onopen = function () {
       //ヘッダーに緑地白文字でメッセージを出す
-      $("#info_bar").text("connection to " + server_url + " is opened");
+      $("#info_bar").text("open!");
       $("#headerbg").css("background", "#008000");
     }
     //メッセージの受信
@@ -31,7 +31,7 @@ function open_websocket(server_url, index, passphrase) {
     //切断時の処理
     ws.onclose = function(e) {
       //ヘッダーに赤地白文字でメッセージを出す
-      $("#info_bar").text("connection to " + server_url + " is closed");
+      $("#info_bar").text("close!");
       $("#headerbg").css("background", "#822222");
       ws = null;
     }
@@ -125,6 +125,9 @@ function setRepeatedAction(elem, action, end_action, interval) {
   }
 }
 
+function sendFixedPhrase() {
+  send_data("fixedphrase", $("#fixedphrase").val());
+}
 
 $(function() {
   var INTERVAL = 5000;   // Less than safety thread interval.
@@ -157,4 +160,6 @@ $(function() {
 
   // 送信ボタン
   $("#send_btn").click(say($("#send_input")));
+
+  $("#btn_fixedphrase").click(sendFixedPhrase);
 });
