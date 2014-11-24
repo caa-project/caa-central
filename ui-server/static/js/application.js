@@ -76,6 +76,23 @@ function is_touch_device() {
     return is_ios || is_android;
 }
 
+var timerPool = {
+  timers: [],
+  push: function(t) {     // 追加
+    this.timers.push(t);
+  },
+  pop: function(t) {      // 削除
+    i = this.timers.indexOf(t);
+    this.timers.splice(i);
+  },
+  stopAll: function() {   // すべてのタイマーを止める
+    for (var i=0; i<this.timers.length; i++) {
+      clearInterval(this.timers[i]);
+    }
+    this.timers = [];
+  }
+};
+
 var observer = {
   start: function(action, interval, touch_id) {
     if (this.timer != null)
@@ -84,6 +101,7 @@ var observer = {
     if (touch_id != null)
       this.touch_id = touch_id
     this.timer = setInterval(action, interval);
+    timer_list.push(this.timer);
   },
   finish: function(action, touch_id) {
     if (touch_id != null && touch_id != this.touch_id)
@@ -92,8 +110,8 @@ var observer = {
       if (action != null)
         action();
       clearInterval(this.timer);
-      this.timer = null;
       this.tuoch_id = null;
+      this.timer = null;
     }
   },
   timer: null,
@@ -133,6 +151,12 @@ function setRepeatedAction(elem, action, end_action, interval) {
       append_message('info','mouseup','');
       observer.finish(end_action);
     });
+  }
+}
+
+function stopAllTimers() {
+  for (var i = 0; i < timer_list.length; ++i) {
+    clearInterval(timer_list[i]);
   }
 }
 
