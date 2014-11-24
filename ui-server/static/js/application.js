@@ -40,7 +40,7 @@ function open_websocket(server_url, index, passphrase) {
 }
 
 function send_data(type, value) {
-  json = JSON.stringify({
+  var json = JSON.stringify({
     type: type,
     value: value
   });
@@ -69,13 +69,55 @@ function say($element) {
 }
 
 function is_touch_device() {
-    is_ios = navigator.userAgent.indexOf('iPhone') > 0 ||
+    var is_ios = navigator.userAgent.indexOf('iPhone') > 0 ||
         navigator.userAgent.indexOf('iPad') > 0 ||
         navigator.userAgent.indexOf('iPod') > 0;
-    is_android = navigator.userAgent.indexOf('Android') > 0;
+    var is_android = navigator.userAgent.indexOf('Android') > 0;
     return is_ios || is_android;
 }
 
+var timerPool = {
+  timers: [],
+  push: function(t) {     // 追加
+    this.timers.push(t);
+  },
+  pop: function(t) {      // 削除
+    i = this.timers.indexOf(t);
+    this.timers.splice(i);
+  },
+  stopAllTimers: function() {   // すべてのタイマーを止める
+    for (var i=0; i<this.timers.length; i++) {
+      clearInterval(this.timers[i]);
+      this.timers[i] = null;
+    }
+    this.timers = [];
+  }
+};
+
+var observer = {
+  start: function(action, interval, touch_id) {
+    if (this.timer != null)
+      return;
+    action();
+    if (touch_id != null)
+      this.touch_id = touch_id
+    this.timer = setInterval(action, interval);
+    timerPool.push(this.timer);
+  },
+  finish: function(action, touch_id) {
+    if (touch_id != null && touch_id != this.touch_id)
+        return;
+    if (this.timer != null) {
+      if (action != null)
+        action();
+      clearInterval(this.timer);
+      this.tuoch_id = null;
+      this.timer = null;
+    }
+  },
+  timer: null,
+  touch_id: null
+};
 
 /**
  * Set an action to a button. The action is repeated.
@@ -86,41 +128,29 @@ function is_touch_device() {
  * @param interval {int} interval (msec)
  */
 function setRepeatedAction(elem, action, end_action, interval) {
-  var timer = {
-    start: function() {
-      this.timer = null;
-      action();
-      if (this.timer == null) {
-        this.timer = setInterval(action, interval);
-      }
-    },
-    finish: function() {
-      end_action();
-      if (this.timer != null) {
-        clearInterval(this.timer);
-        this.timer = null;
-      }
-    },
-  };
   if (is_touch_device()) {
     elem.bind('touchstart', function(e) {
       append_message('info','touchstart','');
-      timer.start();
+      var touches = event.changedTouches;
+      observer.start(action, interval,
+          touches[0].identifier);
     });
     elem.bind('touchend', function(e) {
       append_message('info','touchend','');
-      timer.finish();
+      var touches = event.changedTouches;
+      observer.finish(end_action,
+          touches[0].identifier);
     });
   } else {
     elem.mousedown(function() {
       console.log("down");
       append_message('info','mousedown','');
-      timer.start();
+      observer.start(action, interval);
     });
     elem.mouseup(function() {
       console.log("up");
       append_message('info','mouseup','');
-      timer.finish();
+      observer.finish(end_action);
     });
   }
 }
@@ -135,8 +165,6 @@ $(function() {
   // 操作ボタン
   // 押している間だけ動くようにする（ボタンを離したらstopする）
 
-  // ストップ
-  setRepeatedAction($("#btn_stop"), stop, stop, INTERVAL);
   // 左
   setRepeatedAction($("#btn_left"), wheel("left"), stop, INTERVAL);
   // 右
@@ -162,4 +190,23 @@ $(function() {
   $("#send_btn").click(say($("#send_input")));
 
   $("#btn_fixedphrase").click(sendFixedPhrase);
+
+  if (is_touch_device()) {
+    $("#btn_stop").bind('touchstart', function() {
+      stop();
+      timerPool.stopAllTimers();
+    });
+    $(window).bind('touchend', function() {
+      var touches = event.changedTouches;
+      observer.finish(stop, touches[0].identifier);
+    });
+  } else {
+    $("#btn_stop").mousedown(function() {
+      stop();
+      timerPool.stopAllTimers();
+    });
+    $(window).mouseup(function() {
+      observer.finish(stop);
+    });
+  }
 });
