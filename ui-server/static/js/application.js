@@ -85,9 +85,10 @@ var timerPool = {
     i = this.timers.indexOf(t);
     this.timers.splice(i);
   },
-  stopAll: function() {   // すべてのタイマーを止める
+  stopAllTimers: function() {   // すべてのタイマーを止める
     for (var i=0; i<this.timers.length; i++) {
       clearInterval(this.timers[i]);
+      this.timers[i] = null;
     }
     this.timers = [];
   }
@@ -101,7 +102,7 @@ var observer = {
     if (touch_id != null)
       this.touch_id = touch_id
     this.timer = setInterval(action, interval);
-    timer_list.push(this.timer);
+    timerPool.push(this.timer);
   },
   finish: function(action, touch_id) {
     if (touch_id != null && touch_id != this.touch_id)
@@ -154,12 +155,6 @@ function setRepeatedAction(elem, action, end_action, interval) {
   }
 }
 
-function stopAllTimers() {
-  for (var i = 0; i < timer_list.length; ++i) {
-    clearInterval(timer_list[i]);
-  }
-}
-
 function sendFixedPhrase() {
   send_data("fixedphrase", $("#fixedphrase").val());
 }
@@ -198,7 +193,8 @@ $(function() {
 
   if (is_touch_device()) {
     $("#btn_stop").bind('touchstart', function() {
-      observer.finish(stop);
+      stop();
+      timerPool.stopAllTimers();
     });
     $(window).bind('touchend', function() {
       var touches = event.changedTouches;
@@ -206,7 +202,8 @@ $(function() {
     });
   } else {
     $("#btn_stop").mousedown(function() {
-      observer.finish(stop);
+      stop();
+      timerPool.stopAllTimers();
     });
     $(window).mouseup(function() {
       observer.finish(stop);
